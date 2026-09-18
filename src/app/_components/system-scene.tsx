@@ -3,11 +3,12 @@
 import { Grid, Html, OrbitControls, useCursor } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { certifications, education, experienceEntries } from "../_data/experience";
 import { selectedProjects } from "../_data/projects";
+import { featuredSkills, supportingSkills, type Skill } from "../_data/skills";
 
 type Station = {
   id: string;
@@ -63,6 +64,7 @@ export function SystemScene() {
         <World hovered={hovered} selected={selected} aboutExpanded={aboutExpanded} onHover={setHovered} onSelect={selectStation} onToggleAbout={() => setAboutExpanded((expanded) => !expanded)} />
       </Canvas>
       {selected === "experience" && <ExperiencePanel onClose={() => selectStation(null)} />}
+      {selected === "skills" && <SkillsPanel onClose={() => selectStation(null)} />}
     </div>
   );
 }
@@ -121,7 +123,7 @@ function World({ hovered, selected, aboutExpanded, onHover, onSelect, onToggleAb
       <CircuitPaths activeId={activeId} />
       <Core showLabel={!selected} />
       {stations.map((station) => (
-        <StationNode key={station.id} station={station} active={activeId === station.id} selected={selected === station.id} aboutExpanded={aboutExpanded} hovered={hovered === station.id} dimmed={Boolean(activeId && activeId !== station.id)} onHover={onHover} onSelect={onSelect} onToggleAbout={onToggleAbout} />
+        <StationNode key={station.id} station={station} active={activeId === station.id} selected={selected === station.id} panelOpen={Boolean(selected)} aboutExpanded={aboutExpanded} hovered={hovered === station.id} dimmed={Boolean(activeId && activeId !== station.id)} onHover={onHover} onSelect={onSelect} onToggleAbout={onToggleAbout} />
       ))}
     </group>
   );
@@ -174,7 +176,7 @@ function Core({ showLabel }: { showLabel: boolean }) {
   );
 }
 
-function StationNode({ station, active, selected, aboutExpanded, hovered, dimmed, onHover, onSelect, onToggleAbout }: { station: Station; active: boolean; selected: boolean; aboutExpanded: boolean; hovered: boolean; dimmed: boolean; onHover: (id: string | null) => void; onSelect: (id: string | null) => void; onToggleAbout: () => void }) {
+function StationNode({ station, active, selected, panelOpen, aboutExpanded, hovered, dimmed, onHover, onSelect, onToggleAbout }: { station: Station; active: boolean; selected: boolean; panelOpen: boolean; aboutExpanded: boolean; hovered: boolean; dimmed: boolean; onHover: (id: string | null) => void; onSelect: (id: string | null) => void; onToggleAbout: () => void }) {
   const group = useRef<THREE.Group>(null);
   useCursor(hovered);
   useFrame(() => {
@@ -193,7 +195,7 @@ function StationNode({ station, active, selected, aboutExpanded, hovered, dimmed
     >
       <mesh position={[0, 0.07, 0]} receiveShadow><cylinderGeometry args={[1.3, 1.46, 0.16, 8]} /><meshStandardMaterial color={active ? "#173033" : darkMetal} emissive={teal} emissiveIntensity={active ? 0.5 : 0.04} metalness={0.72} roughness={0.34} transparent opacity={dimmed ? 0.42 : 1} /></mesh>
       <StationModel kind={station.kind} active={active} dimmed={dimmed} />
-      {!selected && (
+      {!panelOpen && (
         <Html center position={[0, 1.85, 0]} distanceFactor={15} className="pointer-events-none select-none">
           <div className={`min-w-32 whitespace-nowrap border-l px-3.5 py-2.5 font-mono uppercase backdrop-blur-sm transition-all duration-300 ${active ? "border-teal-100 bg-[#092022]/95 shadow-[0_0_24px_rgba(94,234,212,0.22)]" : dimmed ? "border-teal-200/10 bg-[#030708]/55 opacity-35" : "border-teal-200/45 bg-[#030708]/85"}`}>
             <div className="flex items-center justify-between gap-5"><span className="text-xs font-semibold tracking-[0.16em] text-teal-50">{station.label}</span><span className="text-[9px] tracking-[0.14em] text-teal-200/70">{station.index}</span></div>
@@ -337,6 +339,80 @@ function IdentityField({ label, value, accent = false }: { label: string; value:
   );
 }
 
+function SkillsPanel({ onClose }: { onClose: () => void }) {
+  const [activeSkill, setActiveSkill] = useState<Skill>(featuredSkills[4]);
+
+  return (
+    <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#020506]/76 px-4 pb-5 pt-16 backdrop-blur-[2px]" onClick={onClose}>
+      <section className="pointer-events-auto max-h-[calc(100vh-5.5rem)] w-[74rem] max-w-full overflow-y-auto border border-teal-100/30 bg-[#061012]/98 font-mono text-white shadow-[0_24px_100px_rgba(0,0,0,0.8),0_0_50px_rgba(94,234,212,0.12)]" onClick={(event) => event.stopPropagation()}>
+        <header className="flex items-start justify-between border-b border-white/10 px-6 py-5 sm:px-8">
+          <div>
+            <p className="text-[8px] uppercase tracking-[0.22em] text-teal-200/60">Toolchain matrix // 03</p>
+            <h3 className="mt-2 text-2xl font-bold uppercase tracking-[0.1em] text-white sm:text-3xl">Skills</h3>
+            <p className="mt-1.5 text-[11px] text-zinc-400">The languages, frameworks, and systems behind my work.</p>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Close Skills panel" title="Back to system" className="flex h-9 items-center gap-2 border border-white/15 px-3 text-[8px] uppercase tracking-[0.14em] text-zinc-400 transition-colors hover:border-teal-100/40 hover:text-teal-50"><span>←</span><span className="hidden sm:inline">Back to system</span></button>
+        </header>
+
+        <div className="grid lg:grid-cols-[1fr_17rem]">
+          <div className="relative min-h-[31rem] overflow-hidden border-b border-white/10 bg-[radial-gradient(ellipse_at_center,rgba(28,116,119,0.18),transparent_58%)] p-6 lg:border-b-0 lg:border-r">
+            <div className="skill-platform absolute bottom-16 left-1/2 h-44 w-[82%] -translate-x-1/2" />
+            <div className="relative z-10 mx-auto grid max-w-3xl grid-cols-3 gap-x-8 gap-y-7 pt-8 sm:grid-cols-4 sm:gap-x-10">
+              {featuredSkills.map((skill, index) => (
+                <button
+                  key={skill.name}
+                  type="button"
+                  onPointerEnter={() => setActiveSkill(skill)}
+                  onFocus={() => setActiveSkill(skill)}
+                  onClick={() => setActiveSkill(skill)}
+                  className={`skill-cube mx-auto ${activeSkill.name === skill.name ? "is-active" : ""}`}
+                  style={{ "--skill-color": skill.color, "--skill-delay": `${index * -0.18}s` } as CSSProperties}
+                  aria-label={`${skill.name}, ${skill.category}`}
+                >
+                  <span className="text-sm font-black tracking-normal">{skill.short}</span>
+                </button>
+              ))}
+            </div>
+            <p className="absolute bottom-5 left-0 right-0 text-center text-[8px] uppercase tracking-[0.2em] text-teal-200/50">Hover or tap a module to inspect</p>
+          </div>
+
+          <aside className="flex flex-col p-6 sm:p-7">
+            <div>
+              <p className="text-[7px] uppercase tracking-[0.2em] text-teal-200/55">Active module</p>
+              <div className="mt-4 flex items-center gap-4">
+                <div className="grid h-14 w-14 place-items-center border text-sm font-black" style={{ borderColor: `${activeSkill.color}80`, color: activeSkill.color, boxShadow: `0 0 24px ${activeSkill.color}22` }}>{activeSkill.short}</div>
+                <div>
+                  <h4 className="text-base font-semibold text-zinc-100">{activeSkill.name}</h4>
+                  <p className="mt-1 text-[8px] uppercase tracking-[0.16em] text-zinc-500">{activeSkill.category}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-7 border-t border-white/10 pt-5">
+              <p className="text-[7px] uppercase tracking-[0.2em] text-teal-200/55">System categories</p>
+              <div className="mt-3 space-y-2">
+                {["Languages", "Frontend", "Backend", "Data & Systems"].map((category) => (
+                  <div key={category} className="flex items-center justify-between border-b border-white/5 pb-2 text-[9px] uppercase tracking-[0.1em] text-zinc-400">
+                    <span>{category}</span>
+                    <span className="text-teal-200/45">{featuredSkills.filter((skill) => skill.category === category).length.toString().padStart(2, "0")}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-7 border-t border-white/10 pt-5">
+              <p className="text-[7px] uppercase tracking-[0.2em] text-teal-200/55">Supporting toolchain</p>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {supportingSkills.map((skill) => <span key={skill} className="border border-white/10 px-2 py-1.5 text-[8px] text-zinc-500">{skill}</span>)}
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function ExperiencePanel({ onClose }: { onClose: () => void }) {
   return (
     <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#020506]/72 px-4 pb-5 pt-16 backdrop-blur-[2px]" onClick={onClose}>
@@ -467,7 +543,7 @@ function StationModel({ kind, active, dimmed }: { kind: Station["kind"]; active:
     <group ref={animated}>
       {kind === "servers" && <WorksStation active={active} opacity={opacity} />}
       {kind === "timeline" && <ExperienceStation active={active} opacity={opacity} />}
-      {kind === "robot" && <group position={[0, 0.25, 0]}><mesh castShadow><cylinderGeometry args={[0.48, 0.62, 0.28, 16]} /><Metal opacity={opacity} /></mesh><mesh position={[0, 0.52, 0]} rotation={[0, 0, -0.45]} castShadow><boxGeometry args={[0.22, 0.9, 0.25]} /><Metal light opacity={opacity} /></mesh><mesh position={[0.32, 0.92, 0]} rotation={[0, 0, 0.8]} castShadow><boxGeometry args={[0.2, 0.72, 0.22]} /><Metal light opacity={opacity} /></mesh><mesh position={[0.58, 1.17, 0]}><boxGeometry args={[0.28, 0.28, 0.28]} /><meshStandardMaterial color={teal} emissive={teal} emissiveIntensity={glow} transparent opacity={opacity} /></mesh></group>}
+      {kind === "robot" && <SkillsStation active={active} opacity={opacity} />}
       {kind === "door" && <AboutStation active={active} opacity={opacity} />}
       {kind === "dish" && <group position={[0, 0.45, 0]}><mesh castShadow><cylinderGeometry args={[0.48, 0.68, 0.6, 16]} /><Metal opacity={opacity} /></mesh><mesh position={[0, 0.72, 0]} rotation={[0.2, 0, 0.35]} castShadow><sphereGeometry args={[0.68, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshStandardMaterial color="#28484c" side={THREE.DoubleSide} metalness={0.65} emissive={teal} emissiveIntensity={active ? 0.35 : 0.05} transparent opacity={opacity} /></mesh><mesh position={[0.24, 0.98, 0]}><sphereGeometry args={[0.11, 12, 12]} /><meshBasicMaterial color={teal} /></mesh></group>}
       {kind === "workstation" && <group position={[0, 0.72, 0]}><mesh castShadow><boxGeometry args={[1.45, 1, 0.15]} /><Metal opacity={opacity} /></mesh><mesh position={[0, 0, 0.09]}><planeGeometry args={[1.12, 0.68]} /><meshStandardMaterial color="#15545a" emissive={teal} emissiveIntensity={glow} transparent opacity={opacity} /></mesh><mesh position={[0, -0.68, 0]} castShadow><boxGeometry args={[0.14, 0.38, 0.14]} /><Metal light opacity={opacity} /></mesh><mesh position={[0, -0.9, 0]}><boxGeometry args={[0.75, 0.08, 0.32]} /><Metal light opacity={opacity} /></mesh></group>}
@@ -477,6 +553,41 @@ function StationModel({ kind, active, dimmed }: { kind: Station["kind"]; active:
 
 function Metal({ light = false, opacity = 1 }: { light?: boolean; opacity?: number }) {
   return <meshStandardMaterial color={light ? "#52777b" : darkMetal} emissive={light ? "#205154" : "#10292c"} emissiveIntensity={0.28} metalness={0.6} roughness={0.34} transparent opacity={opacity} />;
+}
+
+function SkillsStation({ active, opacity }: { active: boolean; opacity: number }) {
+  const modules = [
+    { position: [-0.52, 0.56, -0.18] as [number, number, number], color: "#68d8ff", scale: 0.34 },
+    { position: [0, 0.78, -0.3] as [number, number, number], color: "#f7df5e", scale: 0.4 },
+    { position: [0.5, 0.53, -0.16] as [number, number, number], color: "#5aa9ff", scale: 0.32 },
+    { position: [-0.3, 0.4, 0.4] as [number, number, number], color: "#63e6ff", scale: 0.3 },
+    { position: [0.28, 0.45, 0.4] as [number, number, number], color: "#7fe38d", scale: 0.33 },
+  ];
+
+  return (
+    <group>
+      <mesh position={[0, 0.19, 0]} receiveShadow>
+        <cylinderGeometry args={[1.05, 1.18, 0.22, 24]} />
+        <meshStandardMaterial color="#102528" metalness={0.72} roughness={0.3} transparent opacity={opacity} />
+      </mesh>
+      <mesh position={[0, 0.31, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.65, 0.92, 32]} />
+        <meshStandardMaterial color={teal} emissive={teal} emissiveIntensity={active ? 1.1 : 0.28} transparent opacity={(active ? 0.8 : 0.36) * opacity} toneMapped={false} />
+      </mesh>
+      {modules.map((module, index) => (
+        <group key={`${module.position[0]}-${module.position[2]}`} position={module.position} rotation={[0.05 * index, 0.35 * index, 0.04 * (index - 2)]}>
+          <mesh castShadow scale={module.scale}>
+            <boxGeometry args={[1, 1, 1]} />
+            <meshStandardMaterial color="#102124" emissive={module.color} emissiveIntensity={active ? 0.75 : 0.22} metalness={0.48} roughness={0.26} transparent opacity={opacity} />
+          </mesh>
+          <mesh position={[0, 0, module.scale * 0.52]} scale={module.scale * 0.42}>
+            <planeGeometry args={[1, 1]} />
+            <meshBasicMaterial color={module.color} transparent opacity={(active ? 1 : 0.65) * opacity} toneMapped={false} />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  );
 }
 
 function ExperienceStation({ active, opacity }: { active: boolean; opacity: number }) {
