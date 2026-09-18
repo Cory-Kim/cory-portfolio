@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
+import { certifications, education, experienceEntries } from "../_data/experience";
 import { selectedProjects } from "../_data/projects";
 
 type Station = {
@@ -44,7 +45,7 @@ export function SystemScene() {
   };
 
   return (
-    <div className="absolute inset-0 z-0">
+    <div className="absolute inset-0">
       <Canvas
         dpr={[1, 2]}
         shadows
@@ -61,6 +62,7 @@ export function SystemScene() {
         <SceneControls selected={selected} />
         <World hovered={hovered} selected={selected} aboutExpanded={aboutExpanded} onHover={setHovered} onSelect={selectStation} onToggleAbout={() => setAboutExpanded((expanded) => !expanded)} />
       </Canvas>
+      {selected === "experience" && <ExperiencePanel onClose={() => selectStation(null)} />}
     </div>
   );
 }
@@ -263,15 +265,15 @@ function AboutPanel({ expanded, onToggle, onClose }: { expanded: boolean; onTogg
 
           <div className="min-w-0">
             <p className={`${expanded ? "text-base leading-7" : "text-sm leading-6"} text-zinc-200`}>
-              Hi, I&apos;m Cory. I&apos;m a software developer in Vancouver who likes turning half-formed ideas into things people can actually use.
+              Hi, I&apos;m Cory, a Vancouver-based developer with experience across web products, Linux systems, education, and AI evaluation.
             </p>
             <p className={`${expanded ? "text-[13px] leading-6" : "text-[11px] leading-5"} mt-3 text-zinc-400`}>
-              I&apos;m happiest somewhere between engineering and design: figuring out how a product should work, building the system behind it, and obsessing over the small interactions that make it feel right.
+              I enjoy understanding how a product works end to end: building the interface, working through backend logic, testing the details, and making the result easier for people to use.
             </p>
             <div className="mt-4 grid grid-cols-2 gap-px bg-white/10">
               <IdentityField label="Base" value="Vancouver, BC" />
               <IdentityField label="Role" value="Software Developer" />
-              <IdentityField label="Focus" value="Product Systems" />
+              <IdentityField label="Focus" value="Full-stack + Linux" />
               <IdentityField label="Status" value="Available" accent />
             </div>
           </div>
@@ -291,16 +293,16 @@ function AboutPanel({ expanded, onToggle, onClose }: { expanded: boolean; onTogg
 function PersonalLog() {
   const entries = [
     {
-      code: "01 / ORIGIN",
-      text: "I got hooked on programming through the simple thrill of making an idea respond. That feedback loop still drives me.",
+      code: "01 / FOUNDATION",
+      text: "My Computer Systems Technology training at BCIT gave me a foundation in algorithms, databases, software development, and systems thinking.",
     },
     {
-      code: "02 / PROCESS",
-      text: "I learn by building. I would rather make a rough version, test it, and keep shaping it than wait for a perfect plan.",
+      code: "02 / PRACTICE",
+      text: "Working on a real e-commerce platform taught me how code reviews, testing, APIs, infrastructure, and maintainability fit together.",
     },
     {
-      code: "03 / OFFLINE",
-      text: "Away from the editor, I collect ideas from music, games, and the small interface details most people barely notice.",
+      code: "03 / CURRENT",
+      text: "Today I split my time between evaluating AI output, teaching math, and building projects that push my full-stack skills further.",
     },
   ];
 
@@ -329,6 +331,83 @@ function IdentityField({ label, value, accent = false }: { label: string; value:
     <div className="bg-[#071113] px-3 py-2.5">
       <p className="text-[8px] uppercase tracking-[0.16em] text-zinc-600">{label}</p>
       <p className={`mt-1 text-[10px] uppercase tracking-[0.08em] ${accent ? "text-emerald-300" : "text-zinc-300"}`}>{value}</p>
+    </div>
+  );
+}
+
+function ExperiencePanel({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#020506]/72 px-4 pb-5 pt-16 backdrop-blur-[2px]" onClick={onClose}>
+      <section
+        className="pointer-events-auto max-h-[calc(100vh-5.5rem)] w-[76rem] max-w-full overflow-y-auto border border-teal-100/30 bg-[#061012]/98 font-mono text-white shadow-[0_24px_100px_rgba(0,0,0,0.8),0_0_50px_rgba(94,234,212,0.12)]"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="relative h-[19rem] overflow-hidden border-b border-teal-100/20">
+          <Image src="/images/experience-journey.png" alt="A glowing path connecting milestones through a futuristic landscape" fill sizes="(max-width: 1280px) 100vw, 1216px" className="object-cover" priority />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,7,9,0.92)_0%,rgba(2,7,9,0.48)_48%,rgba(2,7,9,0.14)_100%)]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#061012] via-transparent to-black/20" />
+          <div className="absolute left-7 top-6 sm:left-9 sm:top-8">
+            <p className="text-[9px] uppercase tracking-[0.24em] text-teal-200/70">Career archive // 02</p>
+            <h3 className="mt-3 text-3xl font-bold uppercase tracking-[0.08em] text-white sm:text-4xl">Experience</h3>
+            <p className="mt-2 text-xs text-zinc-300 sm:text-sm">A journey through learning, building, and growth.</p>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Close Experience panel" title="Back to system" className="absolute right-6 top-6 flex h-9 items-center gap-2 border border-white/20 bg-black/30 px-3 text-[8px] uppercase tracking-[0.14em] text-zinc-300 backdrop-blur transition-colors hover:border-teal-100/50 hover:text-teal-50"><span>←</span><span className="hidden sm:inline">Back to system</span></button>
+          <div className="absolute bottom-5 left-7 right-7 grid grid-cols-3 sm:left-9 sm:right-9">
+            {experienceEntries.map((entry, index) => (
+              <div key={entry.organization} className="relative border-t border-teal-100/45 pt-3">
+                <span className={`absolute -top-1.5 left-0 h-3 w-3 rounded-full border border-teal-50 ${index === 0 ? "bg-white shadow-[0_0_16px_rgba(94,234,212,1)]" : "bg-teal-300"}`} />
+                <p className="text-[8px] font-semibold uppercase tracking-[0.12em] text-teal-100 sm:text-[10px]">{entry.period.replace(" — ", "–")}</p>
+                <p className="mt-1 hidden max-w-40 text-[9px] leading-4 text-zinc-300 sm:block">{entry.organization}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.55fr_0.75fr] lg:p-9">
+          <div className="relative space-y-4 before:absolute before:bottom-4 before:left-[6px] before:top-4 before:w-px before:bg-teal-200/20">
+            {experienceEntries.map((entry, index) => (
+              <article key={entry.organization} className="relative grid grid-cols-[14px_1fr] gap-4">
+                <span className={`relative z-10 mt-5 h-[13px] w-[13px] rounded-full border ${index === 0 ? "border-teal-100 bg-teal-300 shadow-[0_0_14px_rgba(94,234,212,0.8)]" : "border-teal-200/50 bg-[#071113]"}`} />
+                <div className="border border-white/10 bg-black/15 p-5 transition-colors hover:border-teal-100/25 hover:bg-teal-100/[0.025]">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <p className="text-[9px] uppercase tracking-[0.16em] text-teal-200/70">{entry.period}</p>
+                      <h4 className="mt-2 text-base font-semibold text-zinc-100">{entry.role}</h4>
+                      <p className="mt-1 text-[11px] uppercase tracking-[0.1em] text-zinc-400">{entry.organization}</p>
+                    </div>
+                    <span className="border border-white/10 px-2 py-1 text-[7px] uppercase tracking-[0.12em] text-zinc-500">{entry.type}</span>
+                  </div>
+                  <p className="mt-4 text-xs leading-5 text-zinc-300">{entry.summary}</p>
+                  <ul className="mt-3 space-y-1.5">
+                    {entry.highlights.map((highlight) => <li key={highlight} className="flex gap-2 text-[10px] leading-4 text-zinc-500"><span className="text-teal-200/60">+</span>{highlight}</li>)}
+                  </ul>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <aside className="space-y-4">
+            <section className="border border-white/10 bg-black/15 p-5">
+              <p className="text-[8px] uppercase tracking-[0.2em] text-teal-200/60">Education</p>
+              <h4 className="mt-2 text-sm font-semibold leading-5 text-zinc-100">{education.school}</h4>
+              <p className="mt-1.5 text-[10px] uppercase tracking-[0.08em] text-zinc-400">{education.program}</p>
+              <p className="mt-3 text-[10px] leading-5 text-zinc-500">{education.detail}</p>
+            </section>
+            <section className="border border-white/10 bg-black/15 p-5">
+              <p className="text-[8px] uppercase tracking-[0.2em] text-teal-200/60">Certifications // 04</p>
+              <div className="mt-3 space-y-2">
+                {certifications.map((certification, index) => (
+                  <div key={certification} className="flex items-start gap-2 border-b border-white/5 pb-2.5 text-[10px] leading-4 text-zinc-400 last:border-0 last:pb-0">
+                    <span className="text-teal-200/50">0{index + 1}</span>
+                    <span>{certification}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+            <a href="mailto:cdokyung@gmail.com" className="flex items-center justify-between border border-teal-100/20 px-5 py-4 text-[9px] uppercase tracking-[0.14em] text-teal-200/70 transition-colors hover:border-teal-100/45 hover:bg-teal-100/5 hover:text-teal-50"><span>Discuss an opportunity</span><span>→</span></a>
+          </aside>
+        </div>
+      </section>
     </div>
   );
 }
@@ -385,7 +464,7 @@ function StationModel({ kind, active, dimmed }: { kind: Station["kind"]; active:
   return (
     <group ref={animated}>
       {kind === "servers" && <WorksStation active={active} opacity={opacity} />}
-      {kind === "timeline" && <group position={[0, 0.8, 0]}><mesh castShadow><boxGeometry args={[1.35, 1.15, 0.15]} /><Metal opacity={opacity} /></mesh>{[-0.35, 0, 0.35].map((y) => <mesh key={y} position={[0, y, 0.1]}><boxGeometry args={[0.9, 0.035, 0.025]} /><meshStandardMaterial color={teal} emissive={teal} emissiveIntensity={glow} transparent opacity={opacity} /></mesh>)}</group>}
+      {kind === "timeline" && <ExperienceStation active={active} opacity={opacity} />}
       {kind === "robot" && <group position={[0, 0.25, 0]}><mesh castShadow><cylinderGeometry args={[0.48, 0.62, 0.28, 16]} /><Metal opacity={opacity} /></mesh><mesh position={[0, 0.52, 0]} rotation={[0, 0, -0.45]} castShadow><boxGeometry args={[0.22, 0.9, 0.25]} /><Metal light opacity={opacity} /></mesh><mesh position={[0.32, 0.92, 0]} rotation={[0, 0, 0.8]} castShadow><boxGeometry args={[0.2, 0.72, 0.22]} /><Metal light opacity={opacity} /></mesh><mesh position={[0.58, 1.17, 0]}><boxGeometry args={[0.28, 0.28, 0.28]} /><meshStandardMaterial color={teal} emissive={teal} emissiveIntensity={glow} transparent opacity={opacity} /></mesh></group>}
       {kind === "door" && <AboutStation active={active} opacity={opacity} />}
       {kind === "dish" && <group position={[0, 0.45, 0]}><mesh castShadow><cylinderGeometry args={[0.48, 0.68, 0.6, 16]} /><Metal opacity={opacity} /></mesh><mesh position={[0, 0.72, 0]} rotation={[0.2, 0, 0.35]} castShadow><sphereGeometry args={[0.68, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshStandardMaterial color="#28484c" side={THREE.DoubleSide} metalness={0.65} emissive={teal} emissiveIntensity={active ? 0.35 : 0.05} transparent opacity={opacity} /></mesh><mesh position={[0.24, 0.98, 0]}><sphereGeometry args={[0.11, 12, 12]} /><meshBasicMaterial color={teal} /></mesh></group>}
@@ -396,6 +475,42 @@ function StationModel({ kind, active, dimmed }: { kind: Station["kind"]; active:
 
 function Metal({ light = false, opacity = 1 }: { light?: boolean; opacity?: number }) {
   return <meshStandardMaterial color={light ? "#52777b" : darkMetal} emissive={light ? "#205154" : "#10292c"} emissiveIntensity={0.28} metalness={0.6} roughness={0.34} transparent opacity={opacity} />;
+}
+
+function ExperienceStation({ active, opacity }: { active: boolean; opacity: number }) {
+  const scan = useRef<THREE.Mesh>(null);
+  useFrame(({ clock }) => {
+    if (scan.current) scan.current.position.y = Math.sin(clock.elapsedTime * 1.15) * 0.52;
+  });
+
+  return (
+    <group position={[0, 0.88, 0]}>
+      <mesh castShadow>
+        <boxGeometry args={[1.52, 1.58, 0.22]} />
+        <Metal opacity={opacity} />
+      </mesh>
+      <mesh position={[0, 0, 0.125]}>
+        <boxGeometry args={[1.24, 1.28, 0.035]} />
+        <meshStandardMaterial color="#10282b" emissive={teal} emissiveIntensity={active ? 0.38 : 0.1} transparent opacity={opacity} />
+      </mesh>
+      <mesh position={[-0.42, 0, 0.155]}>
+        <boxGeometry args={[0.025, 0.98, 0.025]} />
+        <meshBasicMaterial color={teal} transparent opacity={(active ? 0.95 : 0.45) * opacity} />
+      </mesh>
+      {[0.38, 0, -0.38].map((y, index) => (
+        <group key={y} position={[-0.42, y, 0.18]}>
+          <mesh><sphereGeometry args={[0.07, 12, 12]} /><meshBasicMaterial color={index === 0 ? "#d7fff9" : teal} transparent opacity={(active ? 1 : 0.62) * opacity} toneMapped={false} /></mesh>
+          <mesh position={[0.42, 0, 0]}><boxGeometry args={[0.62, 0.035, 0.025]} /><meshBasicMaterial color={index === 0 ? "#bffaf2" : "#557b7d"} transparent opacity={opacity} /></mesh>
+        </group>
+      ))}
+      <mesh ref={scan} position={[0.2, 0, 0.2]}>
+        <boxGeometry args={[0.7, 0.025, 0.018]} />
+        <meshBasicMaterial color="#d4fff9" transparent opacity={active ? 0.9 : 0.25} toneMapped={false} />
+      </mesh>
+      <mesh position={[0, -0.94, 0]} castShadow><boxGeometry args={[0.18, 0.32, 0.18]} /><Metal light opacity={opacity} /></mesh>
+      <mesh position={[0, -1.12, 0]}><boxGeometry args={[0.92, 0.08, 0.46]} /><Metal light opacity={opacity} /></mesh>
+    </group>
+  );
 }
 
 function AboutStation({ active, opacity }: { active: boolean; opacity: number }) {
