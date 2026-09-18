@@ -8,8 +8,8 @@ const SystemScene = dynamic(
 );
 
 const socials = [
-  { label: "GitHub", href: "https://github.com/cdokyung" },
-  { label: "LinkedIn", href: "https://www.linkedin.com/in/cory-kim-dev/" },
+  { label: "GitHub", href: "https://github.com/Cory-Kim" },
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/dokyung-kim-0a7a8425b/" },
   { label: "Email", href: "mailto:cdokyung@gmail.com" },
 ];
 
@@ -54,9 +54,9 @@ export function SystemMap() {
 function IntroPanel() {
   return (
     <div className="absolute left-0 top-8 max-w-[15rem] sm:top-10 sm:max-w-[18rem] lg:top-12">
-      <p className="mb-2 font-mono text-[0.58rem] uppercase tracking-[0.24em] text-zinc-500 sm:mb-3 sm:text-[0.65rem]">Software Developer</p>
+      <p className="mb-2 font-mono text-[0.65rem] uppercase tracking-[0.24em] text-zinc-500 sm:mb-3 sm:text-[0.72rem]">Software Developer</p>
       <h1 className="text-3xl font-black uppercase leading-none tracking-normal text-white sm:text-5xl">Cory Kim</h1>
-      <p className="mt-3 max-w-72 text-xs leading-5 text-zinc-300 sm:mt-4 sm:text-sm sm:leading-6">I turn ambitious ideas into thoughtful digital products, combining full-stack engineering, AI, and interaction design.</p>
+      <p className="mt-3 max-w-80 text-sm leading-6 text-zinc-300 sm:mt-4 sm:text-[0.95rem] sm:leading-6">I turn ambitious ideas into thoughtful digital products, combining full-stack engineering, AI, and interaction design.</p>
     </div>
   );
 }

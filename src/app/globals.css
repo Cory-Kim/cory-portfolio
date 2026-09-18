@@ -47,6 +47,49 @@ html {
   animation: scroll-cue 1.8s ease-in-out infinite;
 }
 
+.identity-scan {
+  background-image: repeating-linear-gradient(
+    180deg,
+    transparent 0,
+    transparent 3px,
+    rgba(94, 234, 212, 0.16) 4px
+  );
+}
+
+.identity-portrait {
+  filter: grayscale(1) contrast(1.2) brightness(0.82) saturate(0.35);
+  transform: scale(1.04);
+}
+
+.identity-scan-beam {
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(153, 246, 228, 0.1),
+    rgba(153, 246, 228, 0.55),
+    transparent
+  );
+  animation: identity-scan 3.4s ease-in-out infinite;
+  mix-blend-mode: screen;
+}
+
+@keyframes identity-scan {
+  0%,
+  100% {
+    top: -20%;
+    opacity: 0;
+  }
+
+  15%,
+  85% {
+    opacity: 0.75;
+  }
+
+  50% {
+    top: 82%;
+  }
+}
+
 @keyframes scroll-cue {
   0%,
   100% {
