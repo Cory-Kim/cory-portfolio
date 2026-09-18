@@ -1,9 +1,10 @@
 "use client";
 
-import { Grid, Html, OrbitControls, useCursor } from "@react-three/drei";
+import { ContactShadows, Float, Grid, Html, MeshReflectorMaterial, OrbitControls, RoundedBox, useCursor } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { siCplusplus, siDjango, siGit, siJavascript, siLinux, siMongodb, siNextdotjs, siNodedotjs, siPostgresql, siPython, siReact, siTypescript } from "simple-icons";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { certifications, education, experienceEntries } from "../_data/experience";
@@ -355,25 +356,9 @@ function SkillsPanel({ onClose }: { onClose: () => void }) {
         </header>
 
         <div className="grid lg:grid-cols-[1fr_17rem]">
-          <div className="relative min-h-[31rem] overflow-hidden border-b border-white/10 bg-[radial-gradient(ellipse_at_center,rgba(28,116,119,0.18),transparent_58%)] p-6 lg:border-b-0 lg:border-r">
-            <div className="skill-platform absolute bottom-16 left-1/2 h-44 w-[82%] -translate-x-1/2" />
-            <div className="relative z-10 mx-auto grid max-w-3xl grid-cols-3 gap-x-8 gap-y-7 pt-8 sm:grid-cols-4 sm:gap-x-10">
-              {featuredSkills.map((skill, index) => (
-                <button
-                  key={skill.name}
-                  type="button"
-                  onPointerEnter={() => setActiveSkill(skill)}
-                  onFocus={() => setActiveSkill(skill)}
-                  onClick={() => setActiveSkill(skill)}
-                  className={`skill-cube mx-auto ${activeSkill.name === skill.name ? "is-active" : ""}`}
-                  style={{ "--skill-color": skill.color, "--skill-delay": `${index * -0.18}s` } as CSSProperties}
-                  aria-label={`${skill.name}, ${skill.category}`}
-                >
-                  <span className="text-sm font-black tracking-normal">{skill.short}</span>
-                </button>
-              ))}
-            </div>
-            <p className="absolute bottom-5 left-0 right-0 text-center text-[8px] uppercase tracking-[0.2em] text-teal-200/50">Hover or tap a module to inspect</p>
+          <div className="relative min-h-[31rem] overflow-hidden border-b border-white/10 bg-[radial-gradient(ellipse_at_center,rgba(28,116,119,0.18),transparent_58%)] lg:border-b-0 lg:border-r">
+            <SkillsCubeScene activeSkill={activeSkill} onSelect={setActiveSkill} />
+            <p className="absolute bottom-5 left-0 right-0 z-10 text-center text-[8px] uppercase tracking-[0.2em] text-teal-200/50">Hover or tap a module to inspect</p>
           </div>
 
           <aside className="flex flex-col p-6 sm:p-7">
@@ -411,6 +396,105 @@ function SkillsPanel({ onClose }: { onClose: () => void }) {
       </section>
     </div>
   );
+}
+
+const skillIcons: Record<string, { path: string }> = {
+  Python: siPython,
+  JavaScript: siJavascript,
+  TypeScript: siTypescript,
+  "C++": siCplusplus,
+  React: siReact,
+  "Next.js": siNextdotjs,
+  "Node.js": siNodedotjs,
+  Django: siDjango,
+  Linux: siLinux,
+  SQL: siPostgresql,
+  MongoDB: siMongodb,
+  Git: siGit,
+};
+
+const cubePositions: Array<[number, number, number]> = [
+  [-3.75, 0.12, -2.5], [-1.25, 0.12, -2.5], [1.25, 0.12, -2.5], [3.75, 0.12, -2.5],
+  [-3.75, 0.12, 0], [-1.25, 0.12, 0], [1.25, 0.12, 0], [3.75, 0.12, 0],
+  [-3.75, 0.12, 2.5], [-1.25, 0.12, 2.5], [1.25, 0.12, 2.5], [3.75, 0.12, 2.5],
+];
+
+function SkillsCubeScene({ activeSkill, onSelect }: { activeSkill: Skill; onSelect: (skill: Skill) => void }) {
+  return (
+    <div className="absolute inset-0">
+      <Canvas dpr={[1, 2]} shadows camera={{ position: [0, 12.5, 14], fov: 43, near: 0.1, far: 50 }} gl={{ antialias: true, alpha: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.45 }}>
+        <ambientLight intensity={1.1} color="#b9d8d4" />
+        <directionalLight position={[4, 9, 6]} intensity={3.2} color="#e8fffb" castShadow shadow-mapSize={[1024, 1024]} />
+        <pointLight position={[-4, 2, 2]} intensity={22} distance={11} color="#35d8ff" />
+        <pointLight position={[4, 2, -1]} intensity={18} distance={10} color="#3de8bd" />
+
+        <group position={[0, -0.6, 0]}>
+          <mesh position={[0, -1.35, 0]} castShadow receiveShadow>
+            <cylinderGeometry args={[6.35, 6.8, 0.42, 64]} />
+            <meshStandardMaterial color="#071214" metalness={0.86} roughness={0.2} />
+          </mesh>
+          <mesh position={[0, -1.125, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+            <circleGeometry args={[6.23, 64]} />
+            <MeshReflectorMaterial color="#091719" metalness={0.82} roughness={0.28} mirror={0.48} blur={[280, 80]} mixBlur={1.2} mixStrength={0.75} resolution={512} depthScale={0.5} minDepthThreshold={0.4} maxDepthThreshold={1.4} />
+          </mesh>
+          {[2.55, 4.3, 5.95].map((radius) => (
+            <mesh key={radius} position={[0, -1.09, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+              <ringGeometry args={[radius, radius + 0.025, 64]} />
+              <meshBasicMaterial color={teal} transparent opacity={radius === 4.65 ? 0.5 : 0.18} toneMapped={false} />
+            </mesh>
+          ))}
+
+          {featuredSkills.map((skill, index) => (
+            <SkillCube3D key={skill.name} skill={skill} index={index} position={cubePositions[index]} active={activeSkill.name === skill.name} onSelect={onSelect} />
+          ))}
+          <ContactShadows position={[0, -1.08, 0]} opacity={0.72} scale={13} blur={2.5} far={8} />
+        </group>
+
+        <OrbitControls enablePan={false} enableZoom={false} minPolarAngle={Math.PI / 4.2} maxPolarAngle={Math.PI / 3} minAzimuthAngle={-0.28} maxAzimuthAngle={0.28} target={[0, -0.45, 0]} />
+      </Canvas>
+    </div>
+  );
+}
+
+function SkillCube3D({ skill, index, position, active, onSelect }: { skill: Skill; index: number; position: [number, number, number]; active: boolean; onSelect: (skill: Skill) => void }) {
+  const texture = useSkillIconTexture(skillIcons[skill.name].path, skill.color);
+  const size = index === 4 ? 1.3 : index % 5 === 1 ? 1.18 : 1.08;
+
+  return (
+    <Float speed={1.15 + (index % 4) * 0.12} rotationIntensity={0.12} floatIntensity={0.32} floatingRange={[-0.08, 0.14]}>
+      <group position={position} rotation={[0, -0.08 + (index % 4) * 0.05, 0.015 * ((index % 3) - 1)]} onPointerEnter={(event) => { event.stopPropagation(); onSelect(skill); }} onClick={(event) => { event.stopPropagation(); onSelect(skill); }}>
+        <RoundedBox args={[size, size, size]} radius={0.12} smoothness={5} castShadow receiveShadow>
+          <meshPhysicalMaterial color="#0a171a" emissive={skill.color} emissiveIntensity={active ? 0.5 : 0.14} metalness={0.5} roughness={0.2} clearcoat={0.85} clearcoatRoughness={0.16} />
+        </RoundedBox>
+        <mesh position={[0, 0, size / 2 + 0.008]}>
+          <planeGeometry args={[size * 0.58, size * 0.58]} />
+          <meshBasicMaterial map={texture} transparent toneMapped={false} opacity={active ? 1 : 0.82} />
+        </mesh>
+        <pointLight position={[0, 0.1, 0.9]} intensity={active ? 4.5 : 1.2} distance={2.8} color={skill.color} />
+      </group>
+    </Float>
+  );
+}
+
+function useSkillIconTexture(path: string, color: string) {
+  return useMemo(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 256;
+    canvas.height = 256;
+    const context = canvas.getContext("2d");
+    if (context) {
+      context.translate(32, 32);
+      context.scale(8, 8);
+      context.fillStyle = color;
+      context.shadowColor = color;
+      context.shadowBlur = 1.5;
+      context.fill(new Path2D(path));
+    }
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.needsUpdate = true;
+    return texture;
+  }, [color, path]);
 }
 
 function ExperiencePanel({ onClose }: { onClose: () => void }) {
