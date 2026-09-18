@@ -83,6 +83,8 @@ export function SystemScene() {
       {selected === "experience" && <ExperiencePanel onClose={() => selectStation(null)} />}
       {selected === "skills" && <SkillsPanel onClose={() => selectStation(null)} />}
       {selected === "contact" && <ContactPanel onClose={() => selectStation(null)} />}
+      {selected === "works" && <WorksProjectPanel onClose={() => selectStation(null)} />}
+      {selected === "about" && <AboutPanel expanded={aboutExpanded} onToggle={() => setAboutExpanded((expanded) => !expanded)} onClose={() => selectStation(null)} />}
       {selected === "cory-os" && <CoryOsDesktop onClose={() => selectStation(null)} />}
     </div>
   );
@@ -92,7 +94,7 @@ function SceneControls({ selected, introComplete }: { selected: string | null; i
   const controls = useRef<OrbitControlsImpl>(null);
   const { camera, size } = useThree();
   const defaultPosition = useMemo(() => {
-    if (size.width < 700) return new THREE.Vector3(15, 17, 19);
+    if (size.width < 700) return new THREE.Vector3(0, 25, 32);
     if (size.width < 1100) return new THREE.Vector3(11, 13, 15);
     return new THREE.Vector3(7.8, 8.8, 10);
   }, [size.width]);
@@ -250,17 +252,15 @@ function StationNode({ station, active, selected, panelOpen, showLabel, interact
           </div>
         </Html>
       )}
-      {station.id === "works" && selected && <WorksProjectPanel />}
-      {station.id === "about" && selected && <AboutPanel expanded={aboutExpanded} onToggle={onToggleAbout} onClose={() => onSelect(null)} />}
     </group>
   );
 }
 
 function AboutPanel({ expanded, onToggle, onClose }: { expanded: boolean; onToggle: () => void; onClose: () => void }) {
   return (
-    <Html position={[-1.8, 1.35, 0]} center zIndexRange={[30, 20]}>
+    <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#020506]/68 px-3 pb-4 pt-16 backdrop-blur-[2px]" onClick={onClose}>
       <section
-        className={`pointer-events-auto max-h-[calc(100vh-2rem)] max-w-[calc(100vw-2rem)] overflow-y-auto border border-teal-100/30 bg-[#061012]/97 font-mono text-white shadow-[0_20px_80px_rgba(0,0,0,0.72),0_0_40px_rgba(94,234,212,0.12)] backdrop-blur-md transition-[width,padding] duration-300 ${expanded ? "w-[52rem] p-8" : "w-[40rem] p-6"}`}
+        className={`pointer-events-auto max-h-full max-w-full overflow-y-auto border border-teal-100/30 bg-[#061012]/97 font-mono text-white shadow-[0_20px_80px_rgba(0,0,0,0.72),0_0_40px_rgba(94,234,212,0.12)] backdrop-blur-md transition-[width,padding] duration-300 ${expanded ? "w-[52rem] p-4 sm:p-8" : "w-[40rem] p-4 sm:p-6"}`}
         onClick={(event) => event.stopPropagation()}
       >
         <header className="flex items-start justify-between border-b border-white/10 pb-4">
@@ -290,8 +290,8 @@ function AboutPanel({ expanded, onToggle, onClose }: { expanded: boolean; onTogg
           </div>
         </header>
 
-        <div className={`mt-6 grid gap-6 ${expanded ? "sm:grid-cols-[16rem_1fr]" : "sm:grid-cols-[12rem_1fr]"}`}>
-          <div>
+        <div className={`mt-4 grid gap-5 sm:mt-6 sm:gap-6 ${expanded ? "sm:grid-cols-[16rem_1fr]" : "sm:grid-cols-[12rem_1fr]"}`}>
+          <div className="mx-auto w-full max-w-48 sm:max-w-none">
             <div className="relative aspect-square overflow-hidden border border-teal-100/25 bg-teal-950/30">
               <Image
                 src="/images/cory-profile.png"
@@ -332,12 +332,12 @@ function AboutPanel({ expanded, onToggle, onClose }: { expanded: boolean; onTogg
 
         {expanded && <PersonalLog />}
 
-        <footer className="mt-6 flex items-center justify-between border-t border-white/10 pt-4 text-[8px] uppercase tracking-[0.14em] text-zinc-500">
+        <footer className="mt-6 flex flex-col gap-3 border-t border-white/10 pt-4 text-[8px] uppercase tracking-[0.14em] text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
           <span>Engineering × AI × Interaction</span>
           <a href="mailto:cdokyung@gmail.com" className="text-teal-200/70 transition-colors hover:text-teal-50">Start a conversation →</a>
         </footer>
       </section>
-    </Html>
+    </div>
   );
 }
 
@@ -740,11 +740,11 @@ function ExperiencePanel({ onClose }: { onClose: () => void }) {
   );
 }
 
-function WorksProjectPanel() {
+function WorksProjectPanel({ onClose }: { onClose: () => void }) {
   return (
-    <Html position={[1.8, 1.15, 0]} center zIndexRange={[30, 20]}>
+    <div className="pointer-events-none absolute inset-0 z-50 flex items-center justify-center px-4 pb-20 pt-56 sm:justify-end sm:pb-8 sm:pr-[12%] sm:pt-16">
       <section
-        className="pointer-events-auto max-h-[calc(100vh-2rem)] w-80 max-w-[calc(100vw-2rem)] overflow-y-auto border border-teal-100/30 bg-[#061012]/95 p-5 font-mono text-white shadow-[0_18px_70px_rgba(0,0,0,0.65),0_0_35px_rgba(94,234,212,0.12)] backdrop-blur-md"
+        className="pointer-events-auto max-h-full w-[17rem] max-w-full overflow-y-auto border border-teal-100/30 bg-[#061012]/95 p-4 font-mono text-white shadow-[0_18px_70px_rgba(0,0,0,0.65),0_0_35px_rgba(94,234,212,0.12)] backdrop-blur-md sm:w-80 sm:p-5"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mb-3 flex items-center justify-between border-b border-white/10 pb-3">
@@ -752,7 +752,7 @@ function WorksProjectPanel() {
             <p className="text-[8px] uppercase tracking-[0.2em] text-teal-200/60">Selected system</p>
             <h3 className="mt-1 text-sm font-semibold uppercase tracking-[0.16em] text-teal-50">Works // 03</h3>
           </div>
-          <span className="h-2 w-2 rounded-full bg-teal-300 shadow-[0_0_12px_rgba(94,234,212,0.9)]" />
+          <button type="button" onClick={onClose} aria-label="Close Works panel" title="Close panel" className="grid h-7 w-7 place-items-center border border-white/10 text-[10px] text-zinc-500 transition-colors hover:border-teal-100/30 hover:text-teal-100">X</button>
         </div>
         <div className="space-y-1">
           {selectedProjects.map((project) => (
@@ -772,7 +772,7 @@ function WorksProjectPanel() {
           ))}
         </div>
       </section>
-    </Html>
+    </div>
   );
 }
 
