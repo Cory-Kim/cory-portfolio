@@ -17,9 +17,9 @@ export function SystemMap() {
   return (
     <main className="relative h-[100svh] min-h-[38rem] overflow-hidden bg-[#030506] text-white">
       <SystemScene />
-      <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_50%_48%,transparent_20%,rgba(3,5,6,0.28)_68%,rgba(3,5,6,0.82)_100%)]" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-32 bg-gradient-to-b from-[#030506]/85 to-transparent" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-32 bg-gradient-to-t from-[#030506]/95 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_50%_48%,transparent_30%,rgba(3,5,6,0.12)_72%,rgba(3,5,6,0.58)_100%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-28 bg-gradient-to-b from-[#030506]/70 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-28 bg-gradient-to-t from-[#030506]/80 to-transparent" />
 
       <section className="pointer-events-none relative z-20 flex h-full flex-col px-5 py-5 sm:px-8 lg:px-10">
         <header className="flex items-start justify-between gap-6">
