@@ -1,10 +1,10 @@
 "use client";
 
-import { ContactShadows, Float, Grid, Html, MeshReflectorMaterial, OrbitControls, RoundedBox, useCursor } from "@react-three/drei";
+import { ContactShadows, Float, Grid, Html, MeshReflectorMaterial, OrbitControls, RoundedBox, Stars, useCursor } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { siCplusplus, siDjango, siGit, siJavascript, siLinux, siMongodb, siNextdotjs, siNodedotjs, siPostgresql, siPython, siReact, siTypescript } from "simple-icons";
+import { siCplusplus, siDjango, siGit, siGithub, siGmail, siJavascript, siLinux, siMongodb, siNextdotjs, siNodedotjs, siPostgresql, siPython, siReact, siTypescript } from "simple-icons";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { certifications, education, experienceEntries } from "../_data/experience";
@@ -66,6 +66,7 @@ export function SystemScene() {
       </Canvas>
       {selected === "experience" && <ExperiencePanel onClose={() => selectStation(null)} />}
       {selected === "skills" && <SkillsPanel onClose={() => selectStation(null)} />}
+      {selected === "contact" && <ContactPanel onClose={() => selectStation(null)} />}
     </div>
   );
 }
@@ -338,6 +339,126 @@ function IdentityField({ label, value, accent = false }: { label: string; value:
       <p className={`mt-1 text-[10px] uppercase tracking-[0.08em] ${accent ? "text-emerald-300" : "text-zinc-300"}`}>{value}</p>
     </div>
   );
+}
+
+function ContactPanel({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#020506]/76 px-4 pb-5 pt-16 backdrop-blur-[2px]" onClick={onClose}>
+      <section className="pointer-events-auto max-h-[calc(100vh-5.5rem)] w-[68rem] max-w-full overflow-y-auto border border-teal-100/30 bg-[#061012]/98 font-mono text-white shadow-[0_24px_100px_rgba(0,0,0,0.8),0_0_50px_rgba(94,234,212,0.12)]" onClick={(event) => event.stopPropagation()}>
+        <header className="flex items-start justify-between border-b border-white/10 px-6 py-5 sm:px-8">
+          <div>
+            <p className="text-[8px] uppercase tracking-[0.22em] text-teal-200/60">Communication uplink // 05</p>
+            <h3 className="mt-2 text-2xl font-bold uppercase tracking-[0.1em] text-white sm:text-3xl">Contact</h3>
+            <p className="mt-1.5 text-[11px] text-zinc-400">Let&apos;s build something thoughtful together.</p>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Close Contact panel" title="Back to system" className="flex h-9 items-center gap-2 border border-white/15 px-3 text-[8px] uppercase tracking-[0.14em] text-zinc-400 transition-colors hover:border-teal-100/40 hover:text-teal-50"><span>←</span><span className="hidden sm:inline">Back to system</span></button>
+        </header>
+
+        <div className="grid min-h-[32rem] lg:grid-cols-[23rem_1fr]">
+          <div className="flex flex-col border-b border-white/10 p-6 sm:p-8 lg:border-b-0 lg:border-r">
+            <div className="flex items-center gap-3 border border-emerald-300/15 bg-emerald-300/[0.025] px-4 py-3">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="absolute inset-0 animate-ping rounded-full bg-emerald-300/60" />
+                <span className="relative h-2.5 w-2.5 rounded-full bg-emerald-300" />
+              </span>
+              <div>
+                <p className="text-[8px] uppercase tracking-[0.18em] text-emerald-300">Signal ready</p>
+                <p className="mt-1 text-[9px] text-zinc-500">Available for opportunities</p>
+              </div>
+            </div>
+
+            <p className="mt-7 text-sm leading-6 text-zinc-300">Have a role, project, or interesting problem in mind? Email is the fastest way to reach me.</p>
+
+            <div className="mt-6 space-y-2.5">
+              <ContactLink href="mailto:cdokyung@gmail.com" label="Email me" detail="cdokyung@gmail.com" path={siGmail.path} />
+              <ContactLink href="https://www.linkedin.com/in/dokyung-kim-0a7a8425b/" label="LinkedIn" detail="Connect professionally" icon="in" external />
+              <ContactLink href="https://github.com/Cory-Kim" label="GitHub" detail="Explore my repositories" path={siGithub.path} external />
+            </div>
+
+            <div className="mt-auto grid grid-cols-2 gap-px bg-white/10 pt-px">
+              <div className="bg-[#071113] px-4 py-3"><p className="text-[7px] uppercase tracking-[0.18em] text-zinc-600">Base</p><p className="mt-1.5 text-[9px] uppercase text-zinc-300">Vancouver, BC</p></div>
+              <div className="bg-[#071113] px-4 py-3"><p className="text-[7px] uppercase tracking-[0.18em] text-zinc-600">Response</p><p className="mt-1.5 text-[9px] uppercase text-teal-200/75">Channel open</p></div>
+            </div>
+          </div>
+
+          <div className="relative min-h-[30rem] overflow-hidden bg-[radial-gradient(circle_at_center,rgba(18,104,110,0.16),transparent_62%)]">
+            <ContactSignalScene />
+            <div className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 border border-teal-100/20 bg-[#051012]/85 px-4 py-2 text-center backdrop-blur">
+              <p className="text-[7px] uppercase tracking-[0.2em] text-teal-200/60">Awaiting transmission</p>
+              <p className="mt-1 text-[9px] uppercase tracking-[0.12em] text-zinc-300">Send a message to establish contact</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function ContactLink({ href, label, detail, path, icon, external = false }: { href: string; label: string; detail: string; path?: string; icon?: string; external?: boolean }) {
+  return (
+    <a href={href} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined} className="group flex items-center gap-3 border border-white/10 px-4 py-3 transition-colors hover:border-teal-100/35 hover:bg-teal-100/[0.035]">
+      <span className="grid h-9 w-9 shrink-0 place-items-center border border-white/10 text-teal-100/70 group-hover:border-teal-100/30 group-hover:text-teal-50">
+        {path ? <BrandIcon path={path} /> : <span className="font-sans text-sm font-bold tracking-normal">{icon}</span>}
+      </span>
+      <span className="min-w-0 flex-1"><span className="block text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-100">{label}</span><span className="mt-1 block truncate text-[8px] text-zinc-500">{detail}</span></span>
+      <span className="text-xs text-teal-200/40 transition-transform group-hover:translate-x-0.5 group-hover:text-teal-100">→</span>
+    </a>
+  );
+}
+
+function BrandIcon({ path }: { path: string }) {
+  return <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 fill-current"><path d={path} /></svg>;
+}
+
+function ContactSignalScene() {
+  return (
+    <div className="absolute inset-0">
+      <Canvas dpr={[1, 2]} shadows camera={{ position: [5.8, 4.2, 7.5], fov: 42, near: 0.1, far: 40 }} gl={{ antialias: true, alpha: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.45 }}>
+        <ambientLight intensity={1.1} color="#b7d5d1" />
+        <directionalLight position={[4, 8, 5]} intensity={3.5} color="#effffc" castShadow shadow-mapSize={[1024, 1024]} />
+        <pointLight position={[0, 3, 1]} intensity={26} distance={10} color={teal} />
+        <Stars radius={24} depth={12} count={350} factor={1.5} saturation={0} fade speed={0.18} />
+        <SatelliteDish />
+        <ContactShadows position={[0, -1.45, 0]} opacity={0.75} scale={9} blur={2.5} far={8} />
+        <OrbitControls enablePan={false} enableZoom={false} minPolarAngle={Math.PI / 3.1} maxPolarAngle={Math.PI / 2.35} minAzimuthAngle={-0.55} maxAzimuthAngle={0.55} target={[0, 0.35, 0]} />
+      </Canvas>
+    </div>
+  );
+}
+
+function SatelliteDish() {
+  const assembly = useRef<THREE.Group>(null);
+  useFrame(({ clock }) => {
+    if (assembly.current) assembly.current.rotation.y = Math.sin(clock.elapsedTime * 0.28) * 0.2;
+  });
+
+  return (
+    <group position={[0, -0.9, 0]}>
+      <mesh castShadow receiveShadow><cylinderGeometry args={[1.5, 1.85, 0.35, 32]} /><meshStandardMaterial color="#071416" metalness={0.82} roughness={0.24} /></mesh>
+      <mesh position={[0, 0.65, 0]} castShadow><cylinderGeometry args={[0.56, 0.8, 1.3, 24]} /><meshStandardMaterial color="#16292c" metalness={0.75} roughness={0.25} /></mesh>
+      <group ref={assembly} position={[0, 1.55, 0]} rotation={[0, 0, -0.18]}>
+        <mesh rotation={[0.15, 0, -0.48]} castShadow><sphereGeometry args={[1.55, 48, 20, 0, Math.PI * 2, 0, Math.PI / 2.55]} /><meshPhysicalMaterial color="#19363a" side={THREE.DoubleSide} metalness={0.72} roughness={0.2} clearcoat={0.8} /></mesh>
+        <mesh position={[0.64, 0.72, 0]} rotation={[0, 0, -0.45]}><cylinderGeometry args={[0.06, 0.08, 1.25, 12]} /><meshStandardMaterial color="#82a7a5" metalness={0.8} /></mesh>
+        <mesh position={[0.94, 1.08, 0]}><sphereGeometry args={[0.16, 16, 16]} /><meshStandardMaterial color="#dcfffa" emissive={teal} emissiveIntensity={3.5} toneMapped={false} /></mesh>
+      </group>
+      {[0, 0.34, 0.68].map((delay) => <SignalPulse key={delay} delay={delay} />)}
+    </group>
+  );
+}
+
+function SignalPulse({ delay }: { delay: number }) {
+  const ring = useRef<THREE.Mesh>(null);
+  const material = useRef<THREE.MeshBasicMaterial>(null);
+  useFrame(({ clock }) => {
+    const progress = (clock.elapsedTime * 0.32 + delay) % 1;
+    if (ring.current) {
+      const scale = 0.5 + progress * 2.3;
+      ring.current.scale.setScalar(scale);
+      ring.current.position.y = 2.75 + progress * 1.1;
+    }
+    if (material.current) material.current.opacity = Math.sin(progress * Math.PI) * 0.62;
+  });
+  return <mesh ref={ring} position={[0.55, 2.75, 0]} rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[0.55, 0.018, 8, 48]} /><meshBasicMaterial ref={material} color={teal} transparent opacity={0} toneMapped={false} /></mesh>;
 }
 
 function SkillsPanel({ onClose }: { onClose: () => void }) {
