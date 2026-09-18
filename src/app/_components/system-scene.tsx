@@ -50,7 +50,7 @@ export function SystemScene() {
         dpr={[1, 2]}
         shadows
         gl={{ antialias: true, alpha: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.7 }}
-        camera={{ position: [8.4, 9.4, 10.8], fov: 42, near: 0.1, far: 80 }}
+        camera={{ position: [7.8, 8.8, 10], fov: 42, near: 0.1, far: 80 }}
         onPointerMissed={() => selectStation(null)}
       >
         <color attach="background" args={["#030708"]} />
@@ -72,8 +72,8 @@ function SceneControls({ selected }: { selected: string | null }) {
   const { camera, size } = useThree();
   const defaultPosition = useMemo(() => {
     if (size.width < 700) return new THREE.Vector3(15, 17, 19);
-    if (size.width < 1100) return new THREE.Vector3(11.5, 13.5, 15.5);
-    return new THREE.Vector3(8.4, 9.4, 10.8);
+    if (size.width < 1100) return new THREE.Vector3(11, 13, 15);
+    return new THREE.Vector3(7.8, 8.8, 10);
   }, [size.width]);
 
   useEffect(() => {
@@ -82,7 +82,9 @@ function SceneControls({ selected }: { selected: string | null }) {
 
   useFrame(() => {
     const station = stations.find((item) => item.id === selected);
-    const target = station ? new THREE.Vector3(...station.position) : new THREE.Vector3();
+    const target = station
+      ? new THREE.Vector3(station.position[0], station.position[1] - 0.7, station.position[2])
+      : new THREE.Vector3(0, -1.15, 0);
     const desiredPosition = station
       ? target.clone().add(new THREE.Vector3(5.5, 5.2, 6.5))
       : defaultPosition;
@@ -164,7 +166,7 @@ function Core({ showLabel }: { showLabel: boolean }) {
   });
   return (
     <group position={[0, 0.28, 0]}>
-      <mesh castShadow receiveShadow><cylinderGeometry args={[1.05, 1.25, 0.42, 8]} /><meshStandardMaterial color="#183033" metalness={0.64} roughness={0.26} /></mesh>
+      <mesh castShadow receiveShadow><cylinderGeometry args={[1.2, 1.42, 0.44, 8]} /><meshStandardMaterial color="#183033" metalness={0.64} roughness={0.26} /></mesh>
       <mesh position={[0, 0.24, 0]}><boxGeometry args={[1.25, 0.22, 1.25]} /><meshStandardMaterial ref={glow} color="#bafff5" emissive={teal} emissiveIntensity={3.2} toneMapped={false} /></mesh>
       <mesh position={[0, 0.37, 0]}><boxGeometry args={[0.84, 0.12, 0.84]} /><meshStandardMaterial color="#effffc" emissive={teal} emissiveIntensity={1.8} toneMapped={false} /></mesh>
       {showLabel && <SceneLabel position={[0, 1.05, 0]} label="CORE" detail="CENTRAL" />}
@@ -189,7 +191,7 @@ function StationNode({ station, active, selected, aboutExpanded, hovered, dimmed
       onPointerLeave={(event) => { stop(event); onHover(null); }}
       onClick={(event) => { stop(event); onSelect(station.id); }}
     >
-      <mesh position={[0, 0.07, 0]} receiveShadow><cylinderGeometry args={[1.12, 1.25, 0.14, 8]} /><meshStandardMaterial color={active ? "#173033" : darkMetal} emissive={teal} emissiveIntensity={active ? 0.5 : 0.04} metalness={0.72} roughness={0.34} transparent opacity={dimmed ? 0.42 : 1} /></mesh>
+      <mesh position={[0, 0.07, 0]} receiveShadow><cylinderGeometry args={[1.3, 1.46, 0.16, 8]} /><meshStandardMaterial color={active ? "#173033" : darkMetal} emissive={teal} emissiveIntensity={active ? 0.5 : 0.04} metalness={0.72} roughness={0.34} transparent opacity={dimmed ? 0.42 : 1} /></mesh>
       <StationModel kind={station.kind} active={active} dimmed={dimmed} />
       {!selected && (
         <Html center position={[0, 1.85, 0]} distanceFactor={15} className="pointer-events-none select-none">
