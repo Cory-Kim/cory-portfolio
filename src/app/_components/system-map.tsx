@@ -17,9 +17,9 @@ export function SystemMap() {
   return (
     <main className="relative h-[100svh] min-h-[38rem] overflow-hidden bg-[#030506] text-white">
       <SystemScene />
-      <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_50%_48%,transparent_30%,rgba(3,5,6,0.12)_72%,rgba(3,5,6,0.58)_100%)]" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-28 bg-gradient-to-b from-[#030506]/70 to-transparent" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-28 bg-gradient-to-t from-[#030506]/80 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_50%_48%,transparent_42%,rgba(3,5,6,0.05)_78%,rgba(3,5,6,0.3)_100%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-28 bg-gradient-to-b from-[#030506]/55 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-28 bg-gradient-to-t from-[#030506]/65 to-transparent" />
 
       <section className="pointer-events-none relative z-20 flex h-full flex-col px-5 py-5 sm:px-8 lg:px-10">
         <header className="flex items-start justify-between gap-6">
@@ -56,7 +56,7 @@ function IntroPanel() {
     <div className="absolute left-0 top-8 max-w-[15rem] sm:top-10 sm:max-w-[18rem] lg:top-12">
       <p className="mb-2 font-mono text-[0.58rem] uppercase tracking-[0.24em] text-zinc-500 sm:mb-3 sm:text-[0.65rem]">Software Developer</p>
       <h1 className="text-3xl font-black uppercase leading-none tracking-normal text-white sm:text-5xl">Cory Kim</h1>
-      <p className="mt-3 max-w-60 text-xs leading-5 text-zinc-400 sm:mt-4 sm:text-sm sm:leading-6">Building interactive applications, AI tools, and full-stack product systems.</p>
+      <p className="mt-3 max-w-72 text-xs leading-5 text-zinc-300 sm:mt-4 sm:text-sm sm:leading-6">I turn ambitious ideas into thoughtful digital products, combining full-stack engineering, AI, and interaction design.</p>
     </div>
   );
 }
