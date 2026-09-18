@@ -10,6 +10,7 @@ import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { certifications, education, experienceEntries } from "../_data/experience";
 import { selectedProjects } from "../_data/projects";
 import { featuredSkills, supportingSkills, type Skill } from "../_data/skills";
+import { CoryOsDesktop } from "./cory-os";
 
 type Station = {
   id: string;
@@ -82,6 +83,7 @@ export function SystemScene() {
       {selected === "experience" && <ExperiencePanel onClose={() => selectStation(null)} />}
       {selected === "skills" && <SkillsPanel onClose={() => selectStation(null)} />}
       {selected === "contact" && <ContactPanel onClose={() => selectStation(null)} />}
+      {selected === "cory-os" && <CoryOsDesktop onClose={() => selectStation(null)} />}
     </div>
   );
 }
