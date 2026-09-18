@@ -36,6 +36,21 @@ export function SystemScene() {
   const [hovered, setHovered] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [aboutExpanded, setAboutExpanded] = useState(false);
+  const [introSkipped, setIntroSkipped] = useState(false);
+  const [introComplete, setIntroComplete] = useState(false);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const frame = window.requestAnimationFrame(() => {
+        setIntroSkipped(true);
+        setIntroComplete(true);
+      });
+      return () => window.cancelAnimationFrame(frame);
+    }
+    const skipIntro = () => setIntroSkipped(true);
+    window.addEventListener("keydown", skipIntro, { once: true });
+    return () => window.removeEventListener("keydown", skipIntro);
+  }, []);
 
   const selectStation = (id: string | null) => {
     if (id === "about" && selected === "about") {
@@ -47,7 +62,7 @@ export function SystemScene() {
   };
 
   return (
-    <div className="absolute inset-0">
+    <div className="absolute inset-0" onPointerDown={() => { if (!introComplete) setIntroSkipped(true); }}>
       <Canvas
         dpr={[1, 2]}
         shadows
@@ -61,8 +76,8 @@ export function SystemScene() {
         <hemisphereLight intensity={1.5} color="#f3fffd" groundColor="#10282b" />
         <directionalLight position={[3, 11, 6]} intensity={4.5} color="#f5fffe" castShadow shadow-mapSize={[1024, 1024]} />
         <pointLight position={[0, 3, 0]} intensity={68} distance={14} color={teal} />
-        <SceneControls selected={selected} />
-        <World hovered={hovered} selected={selected} aboutExpanded={aboutExpanded} onHover={setHovered} onSelect={selectStation} onToggleAbout={() => setAboutExpanded((expanded) => !expanded)} />
+        <SceneControls selected={selected} introComplete={introComplete} />
+        <World hovered={hovered} selected={selected} aboutExpanded={aboutExpanded} introSkipped={introSkipped} introComplete={introComplete} onIntroComplete={() => setIntroComplete(true)} onHover={setHovered} onSelect={selectStation} onToggleAbout={() => setAboutExpanded((expanded) => !expanded)} />
       </Canvas>
       {selected === "experience" && <ExperiencePanel onClose={() => selectStation(null)} />}
       {selected === "skills" && <SkillsPanel onClose={() => selectStation(null)} />}
@@ -71,7 +86,7 @@ export function SystemScene() {
   );
 }
 
-function SceneControls({ selected }: { selected: string | null }) {
+function SceneControls({ selected, introComplete }: { selected: string | null; introComplete: boolean }) {
   const controls = useRef<OrbitControlsImpl>(null);
   const { camera, size } = useThree();
   const defaultPosition = useMemo(() => {
@@ -81,8 +96,8 @@ function SceneControls({ selected }: { selected: string | null }) {
   }, [size.width]);
 
   useEffect(() => {
-    if (!selected) camera.position.copy(defaultPosition);
-  }, [camera, defaultPosition, selected]);
+    if (!selected && !introComplete) camera.position.copy(defaultPosition.clone().multiplyScalar(0.82));
+  }, [camera, defaultPosition, introComplete, selected]);
 
   useFrame(() => {
     const station = stations.find((item) => item.id === selected);
@@ -94,6 +109,7 @@ function SceneControls({ selected }: { selected: string | null }) {
       : defaultPosition;
 
     if (station) camera.position.lerp(desiredPosition, 0.045);
+    else camera.position.lerp(desiredPosition, introComplete ? 0.035 : 0.008);
     if (controls.current) {
       controls.current.target.lerp(target, 0.06);
       controls.current.update();
@@ -105,7 +121,8 @@ function SceneControls({ selected }: { selected: string | null }) {
       ref={controls}
       makeDefault
       enableDamping
-      enableZoom
+      enableZoom={introComplete}
+      enableRotate={introComplete}
       enablePan={false}
       minDistance={10}
       maxDistance={24}
@@ -117,18 +134,44 @@ function SceneControls({ selected }: { selected: string | null }) {
   );
 }
 
-function World({ hovered, selected, aboutExpanded, onHover, onSelect, onToggleAbout }: { hovered: string | null; selected: string | null; aboutExpanded: boolean; onHover: (id: string | null) => void; onSelect: (id: string | null) => void; onToggleAbout: () => void }) {
+function World({ hovered, selected, aboutExpanded, introSkipped, introComplete, onIntroComplete, onHover, onSelect, onToggleAbout }: { hovered: string | null; selected: string | null; aboutExpanded: boolean; introSkipped: boolean; introComplete: boolean; onIntroComplete: () => void; onHover: (id: string | null) => void; onSelect: (id: string | null) => void; onToggleAbout: () => void }) {
   const activeId = hovered ?? selected;
   return (
     <group position={[0, -0.7, 0]}>
       <Grid args={[38, 38]} cellSize={0.75} cellThickness={0.7} cellColor="#294c52" sectionSize={3} sectionThickness={1.05} sectionColor="#47848c" fadeDistance={29} fadeStrength={1.45} infiniteGrid />
-      <CircuitPaths activeId={activeId} />
-      <Core showLabel={!selected} />
-      {stations.map((station) => (
-        <StationNode key={station.id} station={station} active={activeId === station.id} selected={selected === station.id} panelOpen={Boolean(selected)} aboutExpanded={aboutExpanded} hovered={hovered === station.id} dimmed={Boolean(activeId && activeId !== station.id)} onHover={onHover} onSelect={onSelect} onToggleAbout={onToggleAbout} />
-      ))}
+      <IntroAssembly skipped={introSkipped} onComplete={onIntroComplete}>
+        <CircuitPaths activeId={activeId} />
+        <Core showLabel={introComplete && !selected} />
+        {stations.map((station) => (
+          <StationNode key={station.id} station={station} active={activeId === station.id} selected={selected === station.id} panelOpen={Boolean(selected)} showLabel={introComplete} interactive={introComplete} aboutExpanded={aboutExpanded} hovered={hovered === station.id} dimmed={Boolean(activeId && activeId !== station.id)} onHover={onHover} onSelect={onSelect} onToggleAbout={onToggleAbout} />
+        ))}
+      </IntroAssembly>
     </group>
   );
+}
+
+function IntroAssembly({ skipped, onComplete, children }: { skipped: boolean; onComplete: () => void; children: React.ReactNode }) {
+  const group = useRef<THREE.Group>(null);
+  const elapsed = useRef(0);
+  const finished = useRef(false);
+
+  useFrame((_, delta) => {
+    if (!group.current || finished.current) return;
+    elapsed.current = skipped ? 2.7 : Math.min(elapsed.current + delta, 2.7);
+    const progress = elapsed.current / 2.7;
+    const eased = 1 - Math.pow(1 - progress, 4);
+    group.current.rotation.y = THREE.MathUtils.lerp(-1.05, 0, eased);
+    group.current.rotation.x = THREE.MathUtils.lerp(0.12, 0, eased);
+    const scale = THREE.MathUtils.lerp(0.5, 1, eased);
+    group.current.scale.setScalar(scale);
+    group.current.position.y = THREE.MathUtils.lerp(0.85, 0, eased);
+    if (progress >= 1) {
+      finished.current = true;
+      onComplete();
+    }
+  });
+
+  return <group ref={group}>{children}</group>;
 }
 
 function CircuitPaths({ activeId }: { activeId: string | null }) {
@@ -178,7 +221,7 @@ function Core({ showLabel }: { showLabel: boolean }) {
   );
 }
 
-function StationNode({ station, active, selected, panelOpen, aboutExpanded, hovered, dimmed, onHover, onSelect, onToggleAbout }: { station: Station; active: boolean; selected: boolean; panelOpen: boolean; aboutExpanded: boolean; hovered: boolean; dimmed: boolean; onHover: (id: string | null) => void; onSelect: (id: string | null) => void; onToggleAbout: () => void }) {
+function StationNode({ station, active, selected, panelOpen, showLabel, interactive, aboutExpanded, hovered, dimmed, onHover, onSelect, onToggleAbout }: { station: Station; active: boolean; selected: boolean; panelOpen: boolean; showLabel: boolean; interactive: boolean; aboutExpanded: boolean; hovered: boolean; dimmed: boolean; onHover: (id: string | null) => void; onSelect: (id: string | null) => void; onToggleAbout: () => void }) {
   const group = useRef<THREE.Group>(null);
   useCursor(hovered);
   useFrame(() => {
@@ -191,13 +234,13 @@ function StationNode({ station, active, selected, panelOpen, aboutExpanded, hove
     <group
       ref={group}
       position={station.position}
-      onPointerEnter={(event) => { stop(event); onHover(station.id); }}
-      onPointerLeave={(event) => { stop(event); onHover(null); }}
-      onClick={(event) => { stop(event); onSelect(station.id); }}
+      onPointerEnter={(event) => { stop(event); if (interactive) onHover(station.id); }}
+      onPointerLeave={(event) => { stop(event); if (interactive) onHover(null); }}
+      onClick={(event) => { stop(event); if (interactive) onSelect(station.id); }}
     >
       <mesh position={[0, 0.07, 0]} receiveShadow><cylinderGeometry args={[1.3, 1.46, 0.16, 8]} /><meshStandardMaterial color={active ? "#173033" : darkMetal} emissive={teal} emissiveIntensity={active ? 0.5 : 0.04} metalness={0.72} roughness={0.34} transparent opacity={dimmed ? 0.42 : 1} /></mesh>
       <StationModel kind={station.kind} active={active} dimmed={dimmed} />
-      {!panelOpen && (
+      {showLabel && !panelOpen && (
         <Html center position={[0, 1.85, 0]} distanceFactor={15} className="pointer-events-none select-none">
           <div className={`min-w-32 whitespace-nowrap border-l px-3.5 py-2.5 font-mono uppercase backdrop-blur-sm transition-all duration-300 ${active ? "border-teal-100 bg-[#092022]/95 shadow-[0_0_24px_rgba(94,234,212,0.22)]" : dimmed ? "border-teal-200/10 bg-[#030708]/55 opacity-35" : "border-teal-200/45 bg-[#030708]/85"}`}>
             <div className="flex items-center justify-between gap-5"><span className="text-xs font-semibold tracking-[0.16em] text-teal-50">{station.label}</span><span className="text-[9px] tracking-[0.14em] text-teal-200/70">{station.index}</span></div>
