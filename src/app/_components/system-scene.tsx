@@ -30,6 +30,15 @@ const stations: Station[] = [
   { id: "cory-os", label: "CORY OS", index: "06", detail: "WORKSPACE", position: [0, 0, 5.1], kind: "workstation" },
 ];
 
+const mobileStations: Station[] = [
+  { ...stations[0], position: [-2.65, -0.22, -1.4] },
+  { ...stations[1], position: [2.65, -0.22, -1.4] },
+  { ...stations[2], position: [-2.25, 0, 4.05] },
+  { ...stations[3], position: [2.25, 0, 4.05] },
+  { ...stations[4], position: [0, 0, -4.3] },
+  { ...stations[5], position: [0, 0, 7.05] },
+];
+
 const teal = "#64f4df";
 const darkMetal = "#193236";
 
@@ -78,7 +87,7 @@ export function SystemScene() {
         <directionalLight position={[3, 11, 6]} intensity={4.5} color="#f5fffe" castShadow shadow-mapSize={[1024, 1024]} />
         <pointLight position={[0, 3, 0]} intensity={68} distance={14} color={teal} />
         <SceneControls selected={selected} introComplete={introComplete} />
-        <World hovered={hovered} selected={selected} aboutExpanded={aboutExpanded} introSkipped={introSkipped} introComplete={introComplete} onIntroComplete={() => setIntroComplete(true)} onHover={setHovered} onSelect={selectStation} onToggleAbout={() => setAboutExpanded((expanded) => !expanded)} />
+        <World hovered={hovered} selected={selected} introSkipped={introSkipped} introComplete={introComplete} onIntroComplete={() => setIntroComplete(true)} onHover={setHovered} onSelect={selectStation} />
       </Canvas>
       {selected === "experience" && <ExperiencePanel onClose={() => selectStation(null)} />}
       {selected === "skills" && <SkillsPanel onClose={() => selectStation(null)} />}
@@ -94,7 +103,7 @@ function SceneControls({ selected, introComplete }: { selected: string | null; i
   const controls = useRef<OrbitControlsImpl>(null);
   const { camera, size } = useThree();
   const defaultPosition = useMemo(() => {
-    if (size.width < 700) return new THREE.Vector3(0, 25, 32);
+    if (size.width < 700) return new THREE.Vector3(0, 34, 44);
     if (size.width < 1100) return new THREE.Vector3(11, 13, 15);
     return new THREE.Vector3(7.8, 8.8, 10);
   }, [size.width]);
@@ -138,16 +147,18 @@ function SceneControls({ selected, introComplete }: { selected: string | null; i
   );
 }
 
-function World({ hovered, selected, aboutExpanded, introSkipped, introComplete, onIntroComplete, onHover, onSelect, onToggleAbout }: { hovered: string | null; selected: string | null; aboutExpanded: boolean; introSkipped: boolean; introComplete: boolean; onIntroComplete: () => void; onHover: (id: string | null) => void; onSelect: (id: string | null) => void; onToggleAbout: () => void }) {
+function World({ hovered, selected, introSkipped, introComplete, onIntroComplete, onHover, onSelect }: { hovered: string | null; selected: string | null; introSkipped: boolean; introComplete: boolean; onIntroComplete: () => void; onHover: (id: string | null) => void; onSelect: (id: string | null) => void }) {
   const activeId = hovered ?? selected;
+  const { size } = useThree();
+  const layout = size.width < 700 ? mobileStations : stations;
   return (
     <group position={[0, -0.7, 0]}>
       <Grid args={[38, 38]} cellSize={0.75} cellThickness={0.7} cellColor="#294c52" sectionSize={3} sectionThickness={1.05} sectionColor="#47848c" fadeDistance={29} fadeStrength={1.45} infiniteGrid />
       <IntroAssembly skipped={introSkipped} onComplete={onIntroComplete}>
-        <CircuitPaths activeId={activeId} />
+        <CircuitPaths activeId={activeId} stations={layout} />
         <Core showLabel={introComplete && !selected} />
-        {stations.map((station) => (
-          <StationNode key={station.id} station={station} active={activeId === station.id} selected={selected === station.id} panelOpen={Boolean(selected)} showLabel={introComplete} interactive={introComplete} aboutExpanded={aboutExpanded} hovered={hovered === station.id} dimmed={Boolean(activeId && activeId !== station.id)} onHover={onHover} onSelect={onSelect} onToggleAbout={onToggleAbout} />
+        {layout.map((station) => (
+          <StationNode key={station.id} station={station} active={activeId === station.id} panelOpen={Boolean(selected)} showLabel={introComplete} interactive={introComplete} hovered={hovered === station.id} dimmed={Boolean(activeId && activeId !== station.id)} onHover={onHover} onSelect={onSelect} />
         ))}
       </IntroAssembly>
     </group>
@@ -178,10 +189,10 @@ function IntroAssembly({ skipped, onComplete, children }: { skipped: boolean; on
   return <group ref={group}>{children}</group>;
 }
 
-function CircuitPaths({ activeId }: { activeId: string | null }) {
+function CircuitPaths({ activeId, stations: layout }: { activeId: string | null; stations: Station[] }) {
   return (
     <group position={[0, 0.035, 0]}>
-      {stations.map((station, index) => <CircuitPath key={station.id} station={station} index={index} active={activeId === station.id} dimmed={Boolean(activeId && activeId !== station.id)} />)}
+      {layout.map((station, index) => <CircuitPath key={station.id} station={station} index={index} active={activeId === station.id} dimmed={Boolean(activeId && activeId !== station.id)} />)}
     </group>
   );
 }
@@ -225,8 +236,9 @@ function Core({ showLabel }: { showLabel: boolean }) {
   );
 }
 
-function StationNode({ station, active, selected, panelOpen, showLabel, interactive, aboutExpanded, hovered, dimmed, onHover, onSelect, onToggleAbout }: { station: Station; active: boolean; selected: boolean; panelOpen: boolean; showLabel: boolean; interactive: boolean; aboutExpanded: boolean; hovered: boolean; dimmed: boolean; onHover: (id: string | null) => void; onSelect: (id: string | null) => void; onToggleAbout: () => void }) {
+function StationNode({ station, active, panelOpen, showLabel, interactive, hovered, dimmed, onHover, onSelect }: { station: Station; active: boolean; panelOpen: boolean; showLabel: boolean; interactive: boolean; hovered: boolean; dimmed: boolean; onHover: (id: string | null) => void; onSelect: (id: string | null) => void }) {
   const group = useRef<THREE.Group>(null);
+  const { size } = useThree();
   useCursor(hovered);
   useFrame(() => {
     if (!group.current) return;
@@ -245,10 +257,10 @@ function StationNode({ station, active, selected, panelOpen, showLabel, interact
       <mesh position={[0, 0.07, 0]} receiveShadow><cylinderGeometry args={[1.3, 1.46, 0.16, 8]} /><meshStandardMaterial color={active ? "#173033" : darkMetal} emissive={teal} emissiveIntensity={active ? 0.5 : 0.04} metalness={0.72} roughness={0.34} transparent opacity={dimmed ? 0.42 : 1} /></mesh>
       <StationModel kind={station.kind} active={active} dimmed={dimmed} />
       {showLabel && !panelOpen && (
-        <Html center position={[0, 1.85, 0]} distanceFactor={15} className="pointer-events-none select-none">
-          <div className={`min-w-32 whitespace-nowrap border-l px-3.5 py-2.5 font-mono uppercase backdrop-blur-sm transition-all duration-300 ${active ? "border-teal-100 bg-[#092022]/95 shadow-[0_0_24px_rgba(94,234,212,0.22)]" : dimmed ? "border-teal-200/10 bg-[#030708]/55 opacity-35" : "border-teal-200/45 bg-[#030708]/85"}`}>
-            <div className="flex items-center justify-between gap-5"><span className="text-xs font-semibold tracking-[0.16em] text-teal-50">{station.label}</span><span className="text-[9px] tracking-[0.14em] text-teal-200/70">{station.index}</span></div>
-            <p className="mt-1.5 text-[9px] tracking-[0.14em] text-zinc-400">{station.detail}</p>
+        <Html center position={[0, 1.85, 0]} distanceFactor={size.width < 700 ? 21 : 15} className="pointer-events-none select-none">
+          <div className={`w-24 whitespace-nowrap border-l px-2 py-1.5 font-mono uppercase backdrop-blur-sm transition-all duration-300 sm:w-auto sm:min-w-32 sm:px-3.5 sm:py-2.5 ${active ? "border-teal-100 bg-[#092022]/95 shadow-[0_0_24px_rgba(94,234,212,0.22)]" : dimmed ? "border-teal-200/10 bg-[#030708]/55 opacity-35" : "border-teal-200/45 bg-[#030708]/85"}`}>
+            <div className="flex items-center justify-between gap-2 sm:gap-5"><span className="text-[9px] font-semibold tracking-[0.1em] text-teal-50 sm:text-xs sm:tracking-[0.16em]">{station.label}</span><span className="text-[7px] tracking-[0.1em] text-teal-200/70 sm:text-[9px] sm:tracking-[0.14em]">{station.index}</span></div>
+            <p className="mt-1 text-[8px] tracking-[0.1em] text-zinc-400 sm:mt-1.5 sm:text-[9px] sm:tracking-[0.14em]">{station.detail}</p>
           </div>
         </Html>
       )}
@@ -777,7 +789,8 @@ function WorksProjectPanel({ onClose }: { onClose: () => void }) {
 }
 
 function SceneLabel({ position, label, detail }: { position: [number, number, number]; label: string; detail: string }) {
-  return <Html center position={position} distanceFactor={11} className="pointer-events-none select-none"><div className="whitespace-nowrap text-center font-mono uppercase"><p className="text-[8px] tracking-[0.28em] text-teal-200/75">{detail}</p><p className="mt-1 text-sm font-semibold tracking-[0.2em] text-teal-50">{label}</p></div></Html>;
+  const { size } = useThree();
+  return <Html center position={position} distanceFactor={size.width < 700 ? 16 : 11} className="pointer-events-none select-none"><div className="whitespace-nowrap text-center font-mono uppercase"><p className="text-[8px] tracking-[0.28em] text-teal-200/75">{detail}</p><p className="mt-1 text-sm font-semibold tracking-[0.2em] text-teal-50">{label}</p></div></Html>;
 }
 
 function StationModel({ kind, active, dimmed }: { kind: Station["kind"]; active: boolean; dimmed: boolean }) {

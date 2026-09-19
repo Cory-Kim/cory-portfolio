@@ -37,7 +37,8 @@ export function SystemMap() {
 
         <footer className="grid gap-3 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-zinc-500 sm:grid-cols-[1fr_auto_1fr] sm:items-end sm:text-[0.65rem]">
           <p>Vancouver, BC</p>
-          <p className="text-left text-teal-100/80 sm:text-center">Drag to explore • Click a system</p>
+          <p className="hidden text-left text-teal-100/80 sm:block sm:text-center">Drag to explore • Click a system</p>
+          <p className="text-left text-teal-100/80 sm:hidden">Swipe to explore • Tap a system</p>
           <nav className="pointer-events-auto flex gap-4 sm:justify-end sm:gap-5">
             {socials.map((social) => (
               <a key={social.label} href={social.href} className="transition-colors hover:text-teal-100" target={social.href.startsWith("http") ? "_blank" : undefined} rel={social.href.startsWith("http") ? "noreferrer" : undefined}>
