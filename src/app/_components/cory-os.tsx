@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
+import { certifications, education, experienceEntries } from "../_data/experience";
+import { selectedProjects } from "../_data/projects";
 
 type DesktopApp = { id: string; label: string; code: string; detail: string };
 type WindowState = { open: boolean; minimized: boolean; x: number; y: number; z: number };
@@ -19,7 +21,7 @@ const initialWindows: Record<string, WindowState> = {
   notes: { open: false, minimized: false, x: 350, y: 128, z: 1 },
 };
 
-export function CoryOsDesktop({ onClose }: { onClose: () => void }) {
+export function CoryOsDesktop({ onClose, onNavigate }: { onClose: () => void; onNavigate: (id: string | null) => void }) {
   const [selectedApp, setSelectedApp] = useState("terminal");
   const [windows, setWindows] = useState(initialWindows);
   const [topZ, setTopZ] = useState(2);
@@ -71,7 +73,7 @@ export function CoryOsDesktop({ onClose }: { onClose: () => void }) {
         {desktopApps.map((app) => {
           const state = windows[app.id];
           if (!state.open || state.minimized) return null;
-          return <DraggableWindow key={app.id} app={app} state={state} mobile={mobile} active={selectedApp === app.id} onFocus={() => focusWindow(app.id)} onMove={(x, y) => moveWindow(app.id, x, y)} onMinimize={() => minimizeWindow(app.id)} onClose={() => closeWindow(app.id)}><AppWindowContent app={app} /></DraggableWindow>;
+          return <DraggableWindow key={app.id} app={app} state={state} mobile={mobile} active={selectedApp === app.id} onFocus={() => focusWindow(app.id)} onMove={(x, y) => moveWindow(app.id, x, y)} onMinimize={() => minimizeWindow(app.id)} onClose={() => closeWindow(app.id)}><AppWindowContent app={app} onLaunch={focusWindow} onNavigate={onNavigate} onExit={onClose} /></DraggableWindow>;
         })}
         <div className="pointer-events-none absolute bottom-10 right-6 hidden text-right sm:block sm:right-10"><p className="text-[clamp(3rem,8vw,8rem)] font-black leading-none tracking-normal text-white/[0.025]">CORY OS</p><div className="mt-3 flex items-center justify-end gap-3 text-[8px] uppercase tracking-[0.2em] text-teal-100/35"><span className="h-px w-16 bg-teal-100/20" />Personal workspace</div></div>
       </div>
@@ -115,12 +117,96 @@ function DraggableWindow({ app, state, mobile, active, onFocus, onMove, onMinimi
   );
 }
 
-function AppWindowContent({ app }: { app: DesktopApp }) {
-  const messages: Record<string, string> = {
-    terminal: "CORY OS v0.1 initialized. System shell online.",
-    projects: "03 selected systems indexed and ready.",
-    resume: "Experience and education records synchronized.",
-    notes: "Personal workspace log connected.",
-  };
+function AppWindowContent({ app, onLaunch, onNavigate, onExit }: { app: DesktopApp; onLaunch: (id: string) => void; onNavigate: (id: string | null) => void; onExit: () => void }) {
+  if (app.id === "terminal") return <TerminalContent onLaunch={onLaunch} onNavigate={onNavigate} onExit={onExit} />;
+  if (app.id === "projects") return <ProjectsContent />;
+  if (app.id === "resume") return <ResumeContent />;
+  const messages: Record<string, string> = { notes: "Personal workspace log connected." };
   return <div className="flex h-full min-h-64 flex-col justify-between p-5 sm:p-7"><div><p className="text-[7px] uppercase tracking-[0.2em] text-teal-100/50">Module loaded</p><h2 className="mt-3 text-xl font-bold uppercase tracking-[0.12em] text-zinc-100">{app.label}</h2><p className="mt-3 max-w-md text-[11px] leading-5 text-zinc-400">{messages[app.id]}</p></div><div className="flex items-center gap-2 border-t border-white/10 pt-4 text-[7px] uppercase tracking-[0.16em] text-zinc-600"><span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />Window process active</div></div>;
+}
+
+function ProjectsContent() {
+  return <div className="h-full overflow-y-auto p-4 sm:p-6"><div className="mb-4"><p className="text-[7px] uppercase tracking-[0.2em] text-teal-100/50">03 systems indexed</p><h2 className="mt-2 text-xl font-bold uppercase tracking-[0.12em] text-zinc-100">Selected work</h2></div><div className="space-y-2">{selectedProjects.map((project, index) => <a key={project.name} href={project.href} target="_blank" rel="noreferrer" className="group block border border-white/10 p-3 transition-colors hover:border-teal-100/35 hover:bg-teal-100/[0.04]"><div className="flex items-start justify-between gap-3"><span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-100">0{index + 1} {"//"} {project.name}</span><span className="text-teal-100/60">-&gt;</span></div><p className="mt-1 text-[8px] uppercase tracking-[0.12em] text-teal-200/55">{project.eyebrow}</p><p className="mt-2 text-[9px] leading-4 text-zinc-500">{project.summary}</p></a>)}</div></div>;
+}
+
+function ResumeContent() {
+  return <div className="h-full overflow-y-auto p-4 sm:p-6"><div className="mb-5"><p className="text-[7px] uppercase tracking-[0.2em] text-teal-100/50">Identity record // CV</p><h2 className="mt-2 text-xl font-bold uppercase tracking-[0.12em] text-zinc-100">Cory Kim</h2><p className="mt-1 text-[9px] text-zinc-500">Software Developer // Vancouver, BC</p></div><section><p className="mb-2 text-[7px] uppercase tracking-[0.2em] text-teal-100/50">Experience</p><div className="space-y-3">{experienceEntries.map((entry) => <article key={entry.organization} className="border-l border-teal-100/25 pl-3"><p className="text-[8px] uppercase text-teal-200/60">{entry.period}</p><h3 className="mt-1 text-[10px] font-semibold text-zinc-100">{entry.role}</h3><p className="text-[8px] uppercase text-zinc-600">{entry.organization}</p><p className="mt-1 text-[9px] leading-4 text-zinc-500">{entry.summary}</p></article>)}</div></section><section className="mt-5 border-t border-white/10 pt-4"><p className="text-[7px] uppercase tracking-[0.2em] text-teal-100/50">Education</p><p className="mt-2 text-[10px] text-zinc-200">{education.school}</p><p className="text-[9px] text-zinc-500">{education.program}</p><div className="mt-3 flex flex-wrap gap-1.5">{certifications.map((certification) => <span key={certification} className="border border-white/10 px-2 py-1 text-[7px] text-zinc-500">{certification}</span>)}</div></section></div>;
+}
+
+type TerminalLine = { kind: "input" | "output" | "error"; text: string };
+
+const terminalCommands = ["help", "about", "projects", "skills", "experience", "contact", "resume", "clear", "exit"];
+
+function TerminalContent({ onLaunch, onNavigate, onExit }: { onLaunch: (id: string) => void; onNavigate: (id: string | null) => void; onExit: () => void }) {
+  const [input, setInput] = useState("");
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [commandHistory, setCommandHistory] = useState<string[]>([]);
+  const [lines, setLines] = useState<TerminalLine[]>([
+    { kind: "output", text: "CORY OS v1.0" },
+    { kind: "output", text: "System ready. Type 'help' to see available commands." },
+    { kind: "output", text: "" },
+  ]);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const runCommand = (rawCommand: string) => {
+    const command = rawCommand.trim().toLowerCase();
+    if (!command) return;
+    setCommandHistory((current) => [command, ...current.filter((item) => item !== command)].slice(0, 20));
+    setHistoryIndex(-1);
+    setInput("");
+    setLines((current) => [...current, { kind: "input", text: `cory@system:~$ ${command}` }]);
+
+    if (command === "clear") {
+      setLines([]);
+      return;
+    }
+    if (command === "exit") {
+      onExit();
+      return;
+    }
+    if (command === "help") {
+      setLines((current) => [...current, { kind: "output", text: "AVAILABLE COMMANDS" }, { kind: "output", text: "about       Who Cory is" }, { kind: "output", text: "projects    View selected work" }, { kind: "output", text: "skills      Explore the toolchain" }, { kind: "output", text: "experience  View work history" }, { kind: "output", text: "contact     Open contact channels" }, { kind: "output", text: "resume      Open the résumé" }, { kind: "output", text: "clear       Clear the terminal" }, { kind: "output", text: "exit        Return to the system map" }]);
+      return;
+    }
+    const destinations: Record<string, string> = { projects: "projects", skills: "skills", experience: "experience", contact: "contact", about: "about" };
+    if (destinations[command]) {
+      setLines((current) => [...current, { kind: "output", text: `Opening ${command} module...` }]);
+      window.setTimeout(() => {
+        if (command === "projects") onLaunch("projects");
+        else onNavigate(destinations[command]);
+      }, 180);
+      return;
+    }
+    if (command === "resume") {
+      setLines((current) => [...current, { kind: "output", text: "Résumé module is ready in the desktop workspace." }]);
+      window.setTimeout(() => onLaunch("resume"), 180);
+      return;
+    }
+    const suggestion = terminalCommands.find((item) => item.startsWith(command.slice(0, 2)));
+    setLines((current) => [...current, { kind: "error", text: suggestion ? `Command not found. Did you mean '${suggestion}'?` : `Command not found: '${command}'. Type 'help' for available commands.` }]);
+  };
+
+  const handleKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") runCommand(input);
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      const next = Math.min(historyIndex + 1, commandHistory.length - 1);
+      setHistoryIndex(next);
+      setInput(commandHistory[next] ?? "");
+    }
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      const next = Math.max(historyIndex - 1, -1);
+      setHistoryIndex(next);
+      setInput(next === -1 ? "" : commandHistory[next]);
+    }
+  };
+
+  return <div className="flex h-full flex-col bg-black/20 p-4 text-[10px] leading-5 sm:p-6 sm:text-[11px]" onClick={() => inputRef.current?.focus()}>
+    <div className="min-h-0 flex-1 overflow-y-auto">
+      {lines.map((line, index) => <p key={`${line.text}-${index}`} className={line.kind === "input" ? "text-teal-100" : line.kind === "error" ? "text-amber-200/80" : "text-zinc-400"}>{line.text || "\u00a0"}</p>)}
+    </div>
+    <div className="mt-4 border-t border-white/10 pt-3 text-teal-100"><span>cory@system:~$ </span><input ref={inputRef} value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={handleKeyDown} autoFocus aria-label="Terminal command" className="w-[calc(100%-7.5rem)] bg-transparent text-teal-50 outline-none placeholder:text-zinc-700" placeholder="type a command" /></div>
+    <div className="mt-3 flex flex-wrap gap-1.5">{terminalCommands.slice(0, 6).map((command) => <button key={command} type="button" onClick={() => runCommand(command)} className="border border-white/10 px-2 py-0.5 text-[8px] uppercase tracking-[0.1em] text-zinc-500 transition-colors hover:border-teal-100/30 hover:text-teal-100">{command}</button>)}</div>
+  </div>;
 }

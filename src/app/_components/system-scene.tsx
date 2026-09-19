@@ -46,6 +46,7 @@ export function SystemScene() {
   const [hovered, setHovered] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [aboutExpanded, setAboutExpanded] = useState(false);
+  const [returnToCoryOs, setReturnToCoryOs] = useState(false);
   const [introSkipped, setIntroSkipped] = useState(false);
   const [introComplete, setIntroComplete] = useState(false);
 
@@ -71,6 +72,20 @@ export function SystemScene() {
     setAboutExpanded(false);
   };
 
+  const closeDestination = () => {
+    if (returnToCoryOs) {
+      setReturnToCoryOs(false);
+      setSelected("cory-os");
+    } else {
+      selectStation(null);
+    }
+  };
+
+  const navigateFromCoryOs = (id: string | null) => {
+    if (id) setReturnToCoryOs(true);
+    selectStation(id);
+  };
+
   return (
     <div className="absolute inset-0" onPointerDown={() => { if (!introComplete) setIntroSkipped(true); }}>
       <Canvas
@@ -89,12 +104,12 @@ export function SystemScene() {
         <SceneControls selected={selected} introComplete={introComplete} />
         <World hovered={hovered} selected={selected} introSkipped={introSkipped} introComplete={introComplete} onIntroComplete={() => setIntroComplete(true)} onHover={setHovered} onSelect={selectStation} />
       </Canvas>
-      {selected === "experience" && <ExperiencePanel onClose={() => selectStation(null)} />}
-      {selected === "skills" && <SkillsPanel onClose={() => selectStation(null)} />}
-      {selected === "contact" && <ContactPanel onClose={() => selectStation(null)} />}
-      {selected === "works" && <WorksProjectPanel onClose={() => selectStation(null)} />}
-      {selected === "about" && <AboutPanel expanded={aboutExpanded} onToggle={() => setAboutExpanded((expanded) => !expanded)} onClose={() => selectStation(null)} />}
-      {selected === "cory-os" && <CoryOsDesktop onClose={() => selectStation(null)} />}
+      {selected === "experience" && <ExperiencePanel onClose={closeDestination} />}
+      {selected === "skills" && <SkillsPanel onClose={closeDestination} />}
+      {selected === "contact" && <ContactPanel onClose={closeDestination} />}
+      {selected === "works" && <WorksProjectPanel onClose={closeDestination} />}
+      {selected === "about" && <AboutPanel expanded={aboutExpanded} onToggle={() => setAboutExpanded((expanded) => !expanded)} onClose={closeDestination} />}
+      {selected === "cory-os" && <CoryOsDesktop onClose={() => selectStation(null)} onNavigate={navigateFromCoryOs} />}
     </div>
   );
 }
