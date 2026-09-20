@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cory Kim Portfolio
 
-## Getting Started
+An interactive portfolio showcasing full-stack applications, AI-powered tools, mobile experiences, and creative web development.
 
-First, run the development server:
+The site is designed as a product experience rather than a static project list: motion, 3D elements, and focused project storytelling help visitors understand both the work and the engineering behind it.
+
+## Highlights
+
+- Interactive project presentation built with modern React patterns
+- Real-time 3D scenes and WebGL effects
+- Motion-driven transitions and interface feedback
+- Responsive layouts for desktop and mobile
+- Project case studies spanning web, mobile, AI, and local-first software
+- Cloudflare deployment configuration through OpenNext
+
+## Tech stack
+
+| Area | Technologies |
+| --- | --- |
+| Framework | Next.js, React, TypeScript |
+| Styling | Tailwind CSS |
+| 3D | Three.js, React Three Fiber |
+| Motion | GSAP, Framer Motion |
+| Deployment | OpenNext, Cloudflare |
+
+## Featured projects
+
+- **Explain This** - A cross-platform AI app that turns photos into clear, adaptive explanations.
+- **Soundtrack My Space** - An ambient sound mixer with layered audio controls, focus and sleep presets, and shareable sessions.
+- **Recall** - A local-first desktop search application for finding information across personal files while keeping data on-device by default.
+
+## Getting started
+
+### Prerequisites
+
+- Node.js 20 or newer
+- npm
+
+### Local development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Production build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## Project structure
 
-To learn more about Next.js, take a look at the following resources:
+```text
+public/       Static assets and media
+src/app/      Next.js application routes, components, and styles
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Design approach
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The portfolio balances visual experimentation with clarity. Animation and 3D are used to support navigation and project storytelling, while responsive constraints keep the experience usable across screen sizes.
 
-## Deploy on Vercel
+## Author
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Built by [Cory Kim](https://github.com/Cory-Kim).
