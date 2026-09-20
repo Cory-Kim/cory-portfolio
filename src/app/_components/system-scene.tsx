@@ -31,11 +31,11 @@ const stations: Station[] = [
 ];
 
 const mobileStations: Station[] = [
-  { ...stations[0], position: [-2.65, -0.22, -1.4] },
-  { ...stations[1], position: [2.65, -0.22, -1.4] },
+  { ...stations[0], position: [-2.85, -0.3, -0.3] },
+  { ...stations[1], position: [2.85, -0.3, -0.3] },
   { ...stations[2], position: [-2.25, 0, 4.05] },
   { ...stations[3], position: [2.25, 0, 4.05] },
-  { ...stations[4], position: [0, 0, -4.3] },
+  { ...stations[4], position: [0, -0.45, -3.8] },
   { ...stations[5], position: [0, 0, 7.05] },
 ];
 
@@ -171,7 +171,7 @@ function World({ hovered, selected, introSkipped, introComplete, onIntroComplete
       <Grid args={[38, 38]} cellSize={0.75} cellThickness={0.7} cellColor="#294c52" sectionSize={3} sectionThickness={1.05} sectionColor="#47848c" fadeDistance={29} fadeStrength={1.45} infiniteGrid />
       <IntroAssembly skipped={introSkipped} onComplete={onIntroComplete}>
         <CircuitPaths activeId={activeId} stations={layout} />
-        <Core showLabel={introComplete && !selected} />
+        <Core showLabel={introComplete && !selected} mobile={size.width < 700} />
         {layout.map((station) => (
           <StationNode key={station.id} station={station} active={activeId === station.id} panelOpen={Boolean(selected)} showLabel={introComplete} interactive={introComplete} hovered={hovered === station.id} dimmed={Boolean(activeId && activeId !== station.id)} onHover={onHover} onSelect={onSelect} />
         ))}
@@ -236,13 +236,13 @@ function CircuitPath({ station, index, active, dimmed }: { station: Station; ind
   );
 }
 
-function Core({ showLabel }: { showLabel: boolean }) {
+function Core({ showLabel, mobile }: { showLabel: boolean; mobile: boolean }) {
   const glow = useRef<THREE.MeshStandardMaterial>(null);
   useFrame(({ clock }) => {
     if (glow.current) glow.current.emissiveIntensity = 2.8 + Math.sin(clock.elapsedTime * 1.8) * 0.65;
   });
   return (
-    <group position={[0, 0.28, 0]}>
+    <group position={[0, mobile ? -0.25 : 0.28, 0]}>
       <mesh castShadow receiveShadow><cylinderGeometry args={[1.2, 1.42, 0.44, 8]} /><meshStandardMaterial color="#183033" metalness={0.64} roughness={0.26} /></mesh>
       <mesh position={[0, 0.24, 0]}><boxGeometry args={[1.25, 0.22, 1.25]} /><meshStandardMaterial ref={glow} color="#bafff5" emissive={teal} emissiveIntensity={3.2} toneMapped={false} /></mesh>
       <mesh position={[0, 0.37, 0]}><boxGeometry args={[0.84, 0.12, 0.84]} /><meshStandardMaterial color="#effffc" emissive={teal} emissiveIntensity={1.8} toneMapped={false} /></mesh>
@@ -272,8 +272,8 @@ function StationNode({ station, active, panelOpen, showLabel, interactive, hover
       <mesh position={[0, 0.07, 0]} receiveShadow><cylinderGeometry args={[1.3, 1.46, 0.16, 8]} /><meshStandardMaterial color={active ? "#173033" : darkMetal} emissive={teal} emissiveIntensity={active ? 0.5 : 0.04} metalness={0.72} roughness={0.34} transparent opacity={dimmed ? 0.42 : 1} /></mesh>
       <StationModel kind={station.kind} active={active} dimmed={dimmed} />
       {showLabel && !panelOpen && (
-        <Html center position={[0, 1.85, 0]} distanceFactor={size.width < 700 ? 21 : 15} className="pointer-events-none select-none">
-          <div className={`w-24 whitespace-nowrap border-l px-2 py-1.5 font-mono uppercase backdrop-blur-sm transition-all duration-300 sm:w-auto sm:min-w-32 sm:px-3.5 sm:py-2.5 ${active ? "border-teal-100 bg-[#092022]/95 shadow-[0_0_24px_rgba(94,234,212,0.22)]" : dimmed ? "border-teal-200/10 bg-[#030708]/55 opacity-35" : "border-teal-200/45 bg-[#030708]/85"}`}>
+        <Html center position={[0, station.id === "contact" ? 2.45 : (size.width >= 700 && (station.id === "about" || station.id === "experience") ? 2.35 : 1.85), 0]} distanceFactor={size.width < 700 ? 21 : 15} className="pointer-events-none select-none">
+          <div className={`w-24 whitespace-nowrap border-l px-2 py-1.5 font-mono uppercase transition-all duration-300 sm:w-auto sm:min-w-28 sm:px-2.5 sm:py-1.5 ${station.id === "about" || station.id === "cory-os" ? "scale-[0.72] origin-left" : ""} ${active ? "border-teal-100 bg-[#092022]/95 shadow-[0_0_24px_rgba(94,234,212,0.22)]" : dimmed ? "border-teal-200/10 bg-[#030708]/55 opacity-35" : "border-teal-200/45 bg-[#030708]/85"}`}>
             <div className="flex items-center justify-between gap-2 sm:gap-5"><span className="text-[9px] font-semibold tracking-[0.1em] text-teal-50 sm:text-xs sm:tracking-[0.16em]">{station.label}</span><span className="text-[7px] tracking-[0.1em] text-teal-200/70 sm:text-[9px] sm:tracking-[0.14em]">{station.index}</span></div>
             <p className="mt-1 text-[8px] tracking-[0.1em] text-zinc-400 sm:mt-1.5 sm:text-[9px] sm:tracking-[0.14em]">{station.detail}</p>
           </div>
