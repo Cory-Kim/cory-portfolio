@@ -47,6 +47,8 @@ export function SystemScene() {
   const [selected, setSelected] = useState<string | null>(null);
   const [aboutExpanded, setAboutExpanded] = useState(false);
   const [returnToCoryOs, setReturnToCoryOs] = useState(false);
+  const [dispatching, setDispatching] = useState<string | null>(null);
+  const [arrivalFlash, setArrivalFlash] = useState<string | null>(null);
   const [introSkipped, setIntroSkipped] = useState(false);
   const [introComplete, setIntroComplete] = useState(false);
 
@@ -64,6 +66,10 @@ export function SystemScene() {
   }, []);
 
   const selectStation = (id: string | null) => {
+    if (id && typeof window !== "undefined" && window.innerWidth >= 700 && !selected) {
+      setDispatching(id);
+      return;
+    }
     if (id === "about" && selected === "about") {
       setAboutExpanded((expanded) => !expanded);
       return;
@@ -102,7 +108,7 @@ export function SystemScene() {
         <directionalLight position={[3, 11, 6]} intensity={4.5} color="#f5fffe" castShadow shadow-mapSize={[1024, 1024]} />
         <pointLight position={[0, 3, 0]} intensity={68} distance={14} color={teal} />
         <SceneControls selected={selected} introComplete={introComplete} />
-        <World hovered={hovered} selected={selected} introSkipped={introSkipped} introComplete={introComplete} onIntroComplete={() => setIntroComplete(true)} onHover={setHovered} onSelect={selectStation} />
+        <World hovered={hovered} selected={selected} dispatching={dispatching} arrivalFlash={arrivalFlash} introSkipped={introSkipped} introComplete={introComplete} onIntroComplete={() => setIntroComplete(true)} onDispatchComplete={(id) => { setDispatching(null); setSelected(id); setArrivalFlash(id); window.setTimeout(() => setArrivalFlash(null), 700); }} onHover={setHovered} onSelect={selectStation} />
       </Canvas>
       {selected === "experience" && <ExperiencePanel onClose={closeDestination} />}
       {selected === "skills" && <SkillsPanel onClose={closeDestination} />}
@@ -162,7 +168,7 @@ function SceneControls({ selected, introComplete }: { selected: string | null; i
   );
 }
 
-function World({ hovered, selected, introSkipped, introComplete, onIntroComplete, onHover, onSelect }: { hovered: string | null; selected: string | null; introSkipped: boolean; introComplete: boolean; onIntroComplete: () => void; onHover: (id: string | null) => void; onSelect: (id: string | null) => void }) {
+function World({ hovered, selected, dispatching, arrivalFlash, introSkipped, introComplete, onIntroComplete, onDispatchComplete, onHover, onSelect }: { hovered: string | null; selected: string | null; dispatching: string | null; arrivalFlash: string | null; introSkipped: boolean; introComplete: boolean; onIntroComplete: () => void; onDispatchComplete: (id: string) => void; onHover: (id: string | null) => void; onSelect: (id: string | null) => void }) {
   const activeId = hovered ?? selected;
   const { size } = useThree();
   const layout = size.width < 700 ? mobileStations : stations;
@@ -170,14 +176,47 @@ function World({ hovered, selected, introSkipped, introComplete, onIntroComplete
     <group position={[0, -0.7, 0]}>
       <Grid args={[38, 38]} cellSize={0.75} cellThickness={0.7} cellColor="#294c52" sectionSize={3} sectionThickness={1.05} sectionColor="#47848c" fadeDistance={29} fadeStrength={1.45} infiniteGrid />
       <IntroAssembly skipped={introSkipped} onComplete={onIntroComplete}>
-        <CircuitPaths activeId={activeId} stations={layout} />
+        <CircuitPaths activeId={dispatching ?? activeId} stations={layout} />
         <Core showLabel={introComplete && !selected} mobile={size.width < 700} />
+        {dispatching && size.width >= 700 && <SystemCourier station={stations.find((station) => station.id === dispatching) ?? stations[0]} onArrive={() => onDispatchComplete(dispatching)} />}
         {layout.map((station) => (
-          <StationNode key={station.id} station={station} active={activeId === station.id} panelOpen={Boolean(selected)} showLabel={introComplete} interactive={introComplete} hovered={hovered === station.id} dimmed={Boolean(activeId && activeId !== station.id)} onHover={onHover} onSelect={onSelect} />
+          <StationNode key={station.id} station={station} active={activeId === station.id} arrivalFlash={arrivalFlash === station.id} panelOpen={Boolean(selected)} showLabel={introComplete} interactive={introComplete && !dispatching} hovered={hovered === station.id} dimmed={Boolean(activeId && activeId !== station.id) || Boolean(dispatching && dispatching !== station.id)} onHover={onHover} onSelect={onSelect} />
         ))}
       </IntroAssembly>
     </group>
   );
+}
+
+function SystemCourier({ station, onArrive }: { station: Station; onArrive: () => void }) {
+  const courier = useRef<THREE.Group>(null);
+  const elapsed = useRef(0);
+  const arrived = useRef(false);
+  const [x, , z] = station.position;
+  const curve = useMemo(() => new THREE.CatmullRomCurve3([
+    new THREE.Vector3(0, 0.85, 0),
+    new THREE.Vector3(x * 0.58, 0.85, 0),
+    new THREE.Vector3(x, 0.85, z),
+  ], false, "catmullrom", 0), [x, z]);
+
+  useFrame((_, delta) => {
+    if (!courier.current || arrived.current) return;
+    elapsed.current = Math.min(elapsed.current + delta, 1.15);
+    const progress = elapsed.current / 1.15;
+    const eased = 1 - Math.pow(1 - progress, 3);
+    courier.current.position.copy(curve.getPoint(eased));
+    courier.current.rotation.y += delta * 8;
+    courier.current.scale.setScalar(0.7 + Math.sin(progress * Math.PI) * 0.18);
+    if (progress >= 1) {
+      arrived.current = true;
+      onArrive();
+    }
+  });
+
+  return <group ref={courier} position={[0, 0.85, 0]}>
+    <mesh castShadow><octahedronGeometry args={[0.22, 0]} /><meshStandardMaterial color="#d7fffa" emissive={teal} emissiveIntensity={4} toneMapped={false} /></mesh>
+    <mesh rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[0.34, 0.025, 8, 24]} /><meshBasicMaterial color={teal} transparent opacity={0.8} toneMapped={false} /></mesh>
+    <pointLight distance={3} intensity={8} color={teal} />
+  </group>;
 }
 
 function IntroAssembly({ skipped, onComplete, children }: { skipped: boolean; onComplete: () => void; children: React.ReactNode }) {
@@ -251,13 +290,13 @@ function Core({ showLabel, mobile }: { showLabel: boolean; mobile: boolean }) {
   );
 }
 
-function StationNode({ station, active, panelOpen, showLabel, interactive, hovered, dimmed, onHover, onSelect }: { station: Station; active: boolean; panelOpen: boolean; showLabel: boolean; interactive: boolean; hovered: boolean; dimmed: boolean; onHover: (id: string | null) => void; onSelect: (id: string | null) => void }) {
+function StationNode({ station, active, arrivalFlash, panelOpen, showLabel, interactive, hovered, dimmed, onHover, onSelect }: { station: Station; active: boolean; arrivalFlash: boolean; panelOpen: boolean; showLabel: boolean; interactive: boolean; hovered: boolean; dimmed: boolean; onHover: (id: string | null) => void; onSelect: (id: string | null) => void }) {
   const group = useRef<THREE.Group>(null);
   const { size } = useThree();
   useCursor(hovered);
   useFrame(() => {
     if (!group.current) return;
-    const targetScale = active ? 1.1 : 1;
+    const targetScale = arrivalFlash ? 1.2 : active ? 1.1 : 1;
     group.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.12);
   });
   const stop = (event: { stopPropagation: () => void }) => event.stopPropagation();
@@ -269,7 +308,7 @@ function StationNode({ station, active, panelOpen, showLabel, interactive, hover
       onPointerLeave={(event) => { stop(event); if (interactive) onHover(null); }}
       onClick={(event) => { stop(event); if (interactive) onSelect(station.id); }}
     >
-      <mesh position={[0, 0.07, 0]} receiveShadow><cylinderGeometry args={[1.3, 1.46, 0.16, 8]} /><meshStandardMaterial color={active ? "#173033" : darkMetal} emissive={teal} emissiveIntensity={active ? 0.5 : 0.04} metalness={0.72} roughness={0.34} transparent opacity={dimmed ? 0.42 : 1} /></mesh>
+      <mesh position={[0, 0.07, 0]} receiveShadow><cylinderGeometry args={[1.3, 1.46, 0.16, 8]} /><meshStandardMaterial color={active ? "#173033" : darkMetal} emissive={teal} emissiveIntensity={arrivalFlash ? 2.4 : active ? 0.5 : 0.04} metalness={0.72} roughness={0.34} transparent opacity={dimmed ? 0.42 : 1} /></mesh>
       <StationModel kind={station.kind} active={active} dimmed={dimmed} />
       {showLabel && !panelOpen && (
         <Html center position={[0, station.id === "contact" ? 2.45 : (size.width >= 700 && (station.id === "about" || station.id === "experience") ? 2.35 : 1.85), 0]} distanceFactor={size.width < 700 ? 21 : 15} className="pointer-events-none select-none">
