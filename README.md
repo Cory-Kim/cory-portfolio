@@ -1,5 +1,7 @@
 # Cory Kim Portfolio
 
+[![CI](https://github.com/Cory-Kim/cory-portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/Cory-Kim/cory-portfolio/actions/workflows/ci.yml)
+
 An interactive portfolio showcasing full-stack applications, AI-powered tools, mobile experiences, and creative web development.
 
 The site is designed as a product experience rather than a static project list: motion, 3D elements, and focused project storytelling help visitors understand both the work and the engineering behind it.
@@ -51,6 +53,14 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 npm run build
 npm start
 ```
+
+### Quality checks
+
+```bash
+npm run check
+```
+
+The check covers linting, portfolio-data integrity, secure project links, and the production build.
 
 ## Project structure
 
