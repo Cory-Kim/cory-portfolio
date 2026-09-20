@@ -57,7 +57,7 @@ function IntroPanel() {
     <div className="absolute left-0 top-8 max-w-[15rem] sm:top-10 sm:max-w-[18rem] lg:top-12">
       <p className="mb-2 font-mono text-[0.65rem] uppercase tracking-[0.24em] text-zinc-500 sm:mb-3 sm:text-[0.72rem]">Software Developer</p>
       <h1 className="text-3xl font-black uppercase leading-none tracking-normal text-white sm:text-5xl">Cory Kim</h1>
-      <p className="mt-3 max-w-80 text-sm leading-6 text-zinc-300 sm:mt-4 sm:text-[0.95rem] sm:leading-6">I turn ambitious ideas into thoughtful digital products, combining full-stack engineering, AI, and interaction design.</p>
+      <p className="mt-3 max-w-80 text-sm leading-6 text-zinc-300 sm:mt-4 sm:text-[0.95rem] sm:leading-6">I&apos;m a software developer who likes understanding the whole system: shaping the interface, working through the backend, and making the final product feel simple to use.</p>
     </div>
   );
 }
