@@ -49,6 +49,10 @@ export function CoryOsDesktop({ onClose, onNavigate }: { onClose: () => void; on
   const moveWindow = (id: string, x: number, y: number) => setWindows((current) => ({ ...current, [id]: { ...current[id], x, y } }));
   const taskbarAction = (id: string) => {
     const state = windows[id];
+    if (id === "terminal") {
+      focusWindow(id);
+      return;
+    }
     if (!state.open || state.minimized || selectedApp !== id) focusWindow(id);
     else minimizeWindow(id);
   };
@@ -73,7 +77,7 @@ export function CoryOsDesktop({ onClose, onNavigate }: { onClose: () => void; on
         {desktopApps.map((app) => {
           const state = windows[app.id];
           if (!state.open || state.minimized) return null;
-          return <DraggableWindow key={app.id} app={app} state={state} mobile={mobile} active={selectedApp === app.id} onFocus={() => focusWindow(app.id)} onMove={(x, y) => moveWindow(app.id, x, y)} onMinimize={() => minimizeWindow(app.id)} onClose={() => closeWindow(app.id)}><AppWindowContent app={app} onLaunch={focusWindow} onNavigate={onNavigate} onExit={onClose} /></DraggableWindow>;
+          return <DraggableWindow key={app.id} app={app} state={state} mobile={mobile} active={selectedApp === app.id} persistent={app.id === "terminal"} onFocus={() => focusWindow(app.id)} onMove={(x, y) => moveWindow(app.id, x, y)} onMinimize={() => minimizeWindow(app.id)} onClose={() => closeWindow(app.id)}><AppWindowContent app={app} onLaunch={focusWindow} onNavigate={onNavigate} onExit={onClose} /></DraggableWindow>;
         })}
         <div className="pointer-events-none absolute bottom-10 right-6 hidden text-right sm:block sm:right-10"><p className="text-[clamp(3rem,8vw,8rem)] font-black leading-none tracking-normal text-white/[0.025]">CORY OS</p><div className="mt-3 flex items-center justify-end gap-3 text-[8px] uppercase tracking-[0.2em] text-teal-100/35"><span className="h-px w-16 bg-teal-100/20" />Personal workspace</div></div>
       </div>
@@ -87,7 +91,7 @@ export function CoryOsDesktop({ onClose, onNavigate }: { onClose: () => void; on
   );
 }
 
-function DraggableWindow({ app, state, mobile, active, onFocus, onMove, onMinimize, onClose, children }: { app: DesktopApp; state: WindowState; mobile: boolean; active: boolean; onFocus: () => void; onMove: (x: number, y: number) => void; onMinimize: () => void; onClose: () => void; children: ReactNode }) {
+function DraggableWindow({ app, state, mobile, active, persistent, onFocus, onMove, onMinimize, onClose, children }: { app: DesktopApp; state: WindowState; mobile: boolean; active: boolean; persistent?: boolean; onFocus: () => void; onMove: (x: number, y: number) => void; onMinimize: () => void; onClose: () => void; children: ReactNode }) {
   const windowRef = useRef<HTMLElement>(null);
   const dragOffset = useRef({ x: 0, y: 0 });
   const startDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -110,7 +114,7 @@ function DraggableWindow({ app, state, mobile, active, onFocus, onMove, onMinimi
     <article ref={windowRef} onPointerDown={onFocus} className={`absolute overflow-hidden border bg-[#061012]/98 shadow-[0_24px_90px_rgba(0,0,0,0.72)] backdrop-blur-md ${active ? "border-teal-100/35" : "border-white/15"}`} style={mobile ? { inset: 12, zIndex: state.z } : { left: state.x, top: state.y, width: "min(42rem, calc(100% - 2rem))", height: "min(27rem, calc(100% - 2rem))", zIndex: state.z }}>
       <div onPointerDown={startDrag} onPointerMove={drag} className={`flex h-11 touch-none select-none items-center justify-between border-b px-3 ${mobile ? "cursor-default" : "cursor-move"} ${active ? "border-teal-100/25 bg-teal-100/[0.04]" : "border-white/10"}`}>
         <div className="flex items-center gap-3"><span className="grid h-6 w-7 place-items-center border border-white/10 text-[8px] font-bold text-teal-100">{app.code}</span><div><p className="text-[9px] uppercase tracking-[0.14em] text-zinc-200">{app.label}</p><p className="mt-0.5 text-[6px] uppercase tracking-[0.14em] text-zinc-600">{app.detail}</p></div></div>
-        <div className="flex gap-1.5"><button type="button" onPointerDown={(event) => event.stopPropagation()} onClick={onMinimize} title="Minimize" aria-label={`Minimize ${app.label}`} className="grid h-7 w-7 place-items-center border border-white/10 text-[11px] text-zinc-500 hover:border-teal-100/30 hover:text-teal-100">_</button><button type="button" onPointerDown={(event) => event.stopPropagation()} onClick={onClose} title="Close" aria-label={`Close ${app.label}`} className="grid h-7 w-7 place-items-center border border-white/10 text-[10px] text-zinc-500 hover:border-red-300/30 hover:text-red-200">X</button></div>
+        {!persistent && <div className="flex gap-1.5"><button type="button" onPointerDown={(event) => event.stopPropagation()} onClick={onMinimize} title="Minimize" aria-label={`Minimize ${app.label}`} className="grid h-7 w-7 place-items-center border border-white/10 text-[11px] text-zinc-500 hover:border-teal-100/30 hover:text-teal-100">_</button><button type="button" onPointerDown={(event) => event.stopPropagation()} onClick={onClose} title="Close" aria-label={`Close ${app.label}`} className="grid h-7 w-7 place-items-center border border-white/10 text-[10px] text-zinc-500 hover:border-red-300/30 hover:text-red-200">X</button></div>}
       </div>
       <div className="h-[calc(100%_-_2.75rem)] overflow-auto">{children}</div>
     </article>
@@ -147,6 +151,10 @@ function TerminalContent({ onLaunch, onNavigate, onExit }: { onLaunch: (id: stri
     { kind: "output", text: "" },
   ]);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (window.matchMedia("(min-width: 640px)").matches) inputRef.current?.focus();
+  }, []);
 
   const runCommand = (rawCommand: string) => {
     const command = rawCommand.trim().toLowerCase();
@@ -206,7 +214,7 @@ function TerminalContent({ onLaunch, onNavigate, onExit }: { onLaunch: (id: stri
     <div className="min-h-0 flex-1 overflow-y-auto">
       {lines.map((line, index) => <p key={`${line.text}-${index}`} className={line.kind === "input" ? "text-teal-100" : line.kind === "error" ? "text-amber-200/80" : "text-zinc-400"}>{line.text || "\u00a0"}</p>)}
     </div>
-    <div className="mt-4 border-t border-white/10 pt-3 text-teal-100"><span>cory@system:~$ </span><input ref={inputRef} value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={handleKeyDown} autoFocus aria-label="Terminal command" className="w-[calc(100%-7.5rem)] bg-transparent text-teal-50 outline-none placeholder:text-zinc-700" placeholder="type a command" /></div>
+    <div className="mt-4 border-t border-white/10 pt-3 text-teal-100"><span>cory@system:~$ </span><input ref={inputRef} value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={handleKeyDown} aria-label="Terminal command" className="w-[calc(100%-7.5rem)] bg-transparent text-base text-teal-50 outline-none placeholder:text-zinc-700 sm:text-[11px]" placeholder="type a command" /></div>
     <div className="mt-3 flex flex-wrap gap-1.5">{terminalCommands.slice(0, 6).map((command) => <button key={command} type="button" onClick={() => runCommand(command)} className="border border-white/10 px-2 py-0.5 text-[8px] uppercase tracking-[0.1em] text-zinc-500 transition-colors hover:border-teal-100/30 hover:text-teal-100">{command}</button>)}</div>
   </div>;
 }
