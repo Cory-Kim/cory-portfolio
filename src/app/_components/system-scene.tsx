@@ -22,7 +22,7 @@ type Station = {
 };
 
 const stations: Station[] = [
-  { id: "works", label: "WORKS", index: "01", detail: "03 SYSTEMS", position: [-5.4, 0, -2.8], kind: "servers" },
+  { id: "works", label: "WORKS", index: "01", detail: "04 SYSTEMS", position: [-5.4, 0, -2.8], kind: "servers" },
   { id: "experience", label: "EXPERIENCE", index: "02", detail: "TIMELINE", position: [5.4, 0, -2.7], kind: "timeline" },
   { id: "skills", label: "SKILLS", index: "03", detail: "TOOLCHAIN", position: [-4.8, 0, 3.3], kind: "robot" },
   { id: "about", label: "ABOUT", index: "04", detail: "IDENTITY", position: [4.8, 0, 3.2], kind: "door" },
@@ -816,7 +816,7 @@ function WorksProjectPanel({ onClose }: { onClose: () => void }) {
         <div className="mb-3 flex items-center justify-between border-b border-white/10 pb-3">
           <div>
             <p className="text-[8px] uppercase tracking-[0.2em] text-teal-200/60">Selected system</p>
-            <h3 className="mt-1 text-sm font-semibold uppercase tracking-[0.16em] text-teal-50">Works // 03</h3>
+            <h3 className="mt-1 text-sm font-semibold uppercase tracking-[0.16em] text-teal-50">Works // 04</h3>
           </div>
           <button type="button" onClick={onClose} aria-label="Close Works panel" title="Close panel" className="grid h-7 w-7 place-items-center border border-white/10 text-[10px] text-zinc-500 transition-colors hover:border-teal-100/30 hover:text-teal-100">X</button>
         </div>

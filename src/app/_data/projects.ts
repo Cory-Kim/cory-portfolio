@@ -8,6 +8,14 @@ export type Project = {
 
 export const selectedProjects: Project[] = [
   {
+    name: "Reloqen",
+    href: "https://play.google.com/store/apps/details?id=com.reloqen.app",
+    eyebrow: "Native Android service workflow",
+    summary:
+      "A customizable repair and service management app for customer records, job workflows, receipts, backups, and lifetime Pro upgrades.",
+    stack: ["Kotlin", "Jetpack Compose", "Room", "Hilt"],
+  },
+  {
     name: "Explain This",
     href: "https://holy-pond-5fb7.cdokyung.workers.dev/",
     eyebrow: "AI learning tool",
